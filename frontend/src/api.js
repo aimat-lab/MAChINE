@@ -205,6 +205,16 @@ export default {
    * @param name {string} Name of the molecule
    * @returns {Promise<AxiosResponse<any>>} Promise that returns the server response data (null) without exception handling
    */
+  async get3DMolecule(smiles) {
+    return api
+      .put(`/molecule`, {
+        smiles,
+      })
+      .then((response) => {
+        return response.data
+      })
+  },
+
   async addMolecule(smiles, cml, name) {
     return api
       .patch(`/users/${userID}/molecules`, {

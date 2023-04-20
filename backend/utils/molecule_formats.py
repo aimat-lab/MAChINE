@@ -18,6 +18,18 @@ def is_valid_molecule(smiles):
         return Chem.SanitizeMol(m, catchErrors=True) == 0
 
 
+def smiles_to_3DCML(smiles):
+    try:
+        m = Chem.MolFromSmiles(smiles)
+        m = Chem.AddHs(m)
+        AllChem.EmbedMolecule(m)
+        return Chem.MolToCMLBlock(m)
+
+    except:
+        print(f'ERROR: Could not generate proper 3D Coordinates for "{smiles}"')
+        return None
+
+
 def smiles_to_fingerprint(smiles, fingerprint_size=128, radius=2):
     """
     Converts a smiles code to a fingerprint vector with the given parameters

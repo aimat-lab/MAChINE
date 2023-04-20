@@ -152,6 +152,16 @@ class Molecules(Resource):
         return None, 422
 
 
+class Molecule(Resource):
+    def put(self):
+        args = parser.parse_args()
+        smiles = args['smiles']
+        converted = mf.smiles_to_3DCML(smiles)
+        if converted:
+            return converted, 200
+        return None, 422
+
+
 class Fittings(Resource):
     """
     GET a list of all fittings for given user ID
@@ -393,7 +403,7 @@ class Train(Resource):
                                   labels=labels,
                                   epochs=args['epochs'],
                                   batch_size=args['batchSize'])
-        return True, 200
+        return True, 202
 
     def patch(self, user_id):
         """
@@ -416,7 +426,7 @@ class Train(Resource):
                                   user_id=user_id,
                                   fitting_id=args['fittingID'],
                                   epochs=args['epochs'])
-        return (fitting_summary.get('epochs') + args['epochs']), 200
+        return (fitting_summary.get('epochs') + args['epochs']), 202
 
     def delete(self, user_id):
         """
@@ -440,6 +450,7 @@ api.add_resource(Scoreboard, '/scoreboard/<fitting_id>', '/scoreboard')
 api.add_resource(Datasets, '/datasets')
 api.add_resource(Histograms, '/histograms/<dataset_id>/<labels>')
 api.add_resource(BaseModels, '/baseModels')
+api.add_resource(Molecule, '/molecule')
 
 
 # SocketIO event listeners/senders

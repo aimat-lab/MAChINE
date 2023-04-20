@@ -6,6 +6,7 @@ import {
   Card,
   CardActions,
   CardContent,
+  CircularProgress,
   Grid,
   TextField,
   useTheme,
@@ -191,6 +192,8 @@ export default function MoleculesPage() {
 function MoleculeView({ selectedMolecule, onSave }) {
   const [editorHeight, editorWidth] = ['70vh', '100%']
   const [moleculeDoc, setMoleculeDoc] = React.useState(null)
+  const [viewerDoc, setViewerDoc] = React.useState(null)
+  const [converting, setConverting] = React.useState(false)
   const [molName, setMolName] = React.useState('')
   const [show3D, setShow3D] = React.useState(false)
   const navigate = useNavigate()
@@ -225,6 +228,36 @@ function MoleculeView({ selectedMolecule, onSave }) {
     }
   }
 
+  async function updateViewerDoc() {
+    if (moleculeDoc) {
+      const smiles = Kekule.IO.saveFormatData(moleculeDoc.getChildAt(0), 'smi')
+      return api
+        .get3DMolecule(smiles)
+        .then((converted) => {
+          if (converted) {
+            setViewerDoc(Kekule.IO.loadFormatData(converted, 'cml'))
+          }
+        })
+        .catch(() => setViewerDoc(moleculeDoc))
+    }
+  }
+
+  function changeView() {
+    if (!show3D) {
+      setConverting(true)
+      updateViewerDoc().then(() => {
+        setConverting(false)
+        setShow3D(true)
+      })
+    } else {
+      setShow3D(false)
+    }
+  }
+
+  React.useEffect(() => {
+    updateViewerDoc()
+  }, [moleculeDoc])
+
   return (
     <Card sx={{ maxHeight: gridHeight, height: gridHeight, overflow: 'auto' }}>
       <CardContent>
@@ -236,7 +269,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
         >
           {show3D === true ? (
             <MoleculeRenderer
-              moleculeDoc={moleculeDoc}
+              moleculeDoc={viewerDoc}
               width={editorWidth}
               height={editorHeight}
             />
@@ -290,11 +323,14 @@ function MoleculeView({ selectedMolecule, onSave }) {
         <Button
           size="large"
           variant="contained"
-          onClick={() => setShow3D(!show3D)}
-          endIcon={<VisibilityIcon />}
+          onClick={changeView}
+          endIcon={!converting ? <VisibilityIcon /> : null}
           sx={{ ml: 12 }}
         >
-          Switch to {show3D ? '2D-Editor' : '3D-Viewer'}
+          Switch to {show3D ? '2D-Editor' : '3D-Viewer'}{' '}
+          {converting ? (
+            <CircularProgress size="16px" color="inherit" sx={{ ml: 1 }} />
+          ) : null}
         </Button>
         <Box sx={{ flexGrow: 1 }}></Box>
         <Button
