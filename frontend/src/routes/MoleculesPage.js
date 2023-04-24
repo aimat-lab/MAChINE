@@ -229,7 +229,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
   }
 
   async function updateViewerDoc() {
-    if (moleculeDoc) {
+    if (moleculeDoc && moleculeDoc.getChildCount() > 0) {
       const smiles = Kekule.IO.saveFormatData(moleculeDoc.getChildAt(0), 'smi')
       return api
         .get3DMolecule(smiles)
@@ -239,16 +239,17 @@ function MoleculeView({ selectedMolecule, onSave }) {
           }
         })
         .catch(() => setViewerDoc(moleculeDoc))
+    } else {
+      setViewerDoc(new Kekule.ChemDocument())
     }
   }
 
   function changeView() {
     if (!show3D) {
       setConverting(true)
-      updateViewerDoc().then(() => {
-        setConverting(false)
-        setShow3D(true)
-      })
+      updateViewerDoc()
+        .then(() => setShow3D(true))
+        .finally(() => setConverting(false))
     } else {
       setShow3D(false)
     }
