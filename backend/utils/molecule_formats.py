@@ -25,7 +25,7 @@ def smiles_to_3DCML(smiles):
         AllChem.EmbedMolecule(m)
         return Chem.MolToCMLBlock(m)
 
-    except:
+    except (IndexError, ValueError, TypeError):
         print(f'ERROR: Could not generate proper 3D Coordinates for "{smiles}"')
         return None
 

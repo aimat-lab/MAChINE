@@ -2,6 +2,7 @@ import hashlib
 import json
 import sched
 import time
+import base64
 
 from flask import Flask
 from flask_cors import CORS
@@ -153,9 +154,8 @@ class Molecules(Resource):
 
 
 class Molecule(Resource):
-    def put(self):
-        args = parser.parse_args()
-        smiles = args['smiles']
+    def get(self, smiles):
+        smiles = base64.b64decode(smiles).decode('utf8')
         converted = mf.smiles_to_3DCML(smiles)
         if converted:
             return converted, 200
@@ -450,7 +450,7 @@ api.add_resource(Scoreboard, '/scoreboard/<fitting_id>', '/scoreboard')
 api.add_resource(Datasets, '/datasets')
 api.add_resource(Histograms, '/histograms/<dataset_id>/<labels>')
 api.add_resource(BaseModels, '/baseModels')
-api.add_resource(Molecule, '/molecule')
+api.add_resource(Molecule, '/molecule/<smiles>')
 
 
 # SocketIO event listeners/senders

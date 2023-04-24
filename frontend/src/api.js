@@ -207,9 +207,7 @@ export default {
    */
   async get3DMolecule(smiles) {
     return api
-      .put(`/molecule`, {
-        smiles,
-      })
+      .get(`/molecule/${encodeURIComponent(btoa(smiles))}`)
       .then((response) => {
         return response.data
       })
