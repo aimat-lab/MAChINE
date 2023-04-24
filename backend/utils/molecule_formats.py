@@ -18,7 +18,13 @@ def is_valid_molecule(smiles):
         return Chem.SanitizeMol(m, catchErrors=True) == 0
 
 
-def smiles_to_3DCML(smiles):
+def smiles_to_3DCML(smiles: str) -> str | None:
+    """
+    Converts a given smiles code to a CML string with (mostly) correct 3D coordinates.
+
+    :param smiles: A smiles code
+    :return: CML string on success, None on error.
+    """
     try:
         m = Chem.MolFromSmiles(smiles)
         m = Chem.AddHs(m)

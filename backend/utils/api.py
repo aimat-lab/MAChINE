@@ -154,8 +154,17 @@ class Molecules(Resource):
 
 
 class Molecule(Resource):
-    def get(self, smiles):
-        smiles = base64.b64decode(smiles).decode('utf8')
+    """
+    GET a cml document for a given base64-encoded smiles code
+    """
+    def get(self, b64_smiles) -> tuple[(str | None), int]:
+        """
+        GET a CML string containing a 3D conversion of a base64 encoded smiles code
+
+        :param b64_smiles: A base64 encoded smiles code
+        :return: Tuple of the CML-String and a response code, or None and a response code
+        """
+        smiles = base64.b64decode(b64_smiles).decode('utf8')
         converted = mf.smiles_to_3DCML(smiles)
         if converted:
             return converted, 200
@@ -450,7 +459,7 @@ api.add_resource(Scoreboard, '/scoreboard/<fitting_id>', '/scoreboard')
 api.add_resource(Datasets, '/datasets')
 api.add_resource(Histograms, '/histograms/<dataset_id>/<labels>')
 api.add_resource(BaseModels, '/baseModels')
-api.add_resource(Molecule, '/molecule/<smiles>')
+api.add_resource(Molecule, '/molecule/<b64_smiles>')
 
 
 # SocketIO event listeners/senders

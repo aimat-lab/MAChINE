@@ -228,6 +228,12 @@ function MoleculeView({ selectedMolecule, onSave }) {
     }
   }
 
+  /**
+   * Updates the chemDocument shown by the 3D viewer by sending the current molecule to the backend for conversion.
+   * In case the molecule can't be converted, it uses the regular 3D-ification provided by Kekule.
+   * If there is no drawn molecule, it makes sure the 3D View is blank.
+   * @returns {Promise<AxiosResponse<*> | void>} A promise that's resolved when the api call is done. Or nothing
+   */
   async function updateViewerDoc() {
     if (moleculeDoc && moleculeDoc.getChildCount() > 0) {
       const smiles = Kekule.IO.saveFormatData(moleculeDoc.getChildAt(0), 'smi')
@@ -244,7 +250,11 @@ function MoleculeView({ selectedMolecule, onSave }) {
     }
   }
 
-  function changeView() {
+  /**
+   * Function called when switching between 2D and 3D views.
+   * Handles variable changes required for the process to work.
+   */
+  async function changeView() {
     if (!show3D) {
       setConverting(true)
       updateViewerDoc()
@@ -256,7 +266,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
   }
 
   React.useEffect(() => {
-    updateViewerDoc()
+    updateViewerDoc().then()
   }, [moleculeDoc])
 
   return (
@@ -328,7 +338,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
           endIcon={!converting ? <VisibilityIcon /> : null}
           sx={{ ml: 12 }}
         >
-          Switch to {show3D ? '2D-Editor' : '3D-Viewer'}{' '}
+          Switch to {show3D ? '2D-Editor' : '3D-Viewer'}
           {converting ? (
             <CircularProgress size="16px" color="inherit" sx={{ ml: 1 }} />
           ) : null}
