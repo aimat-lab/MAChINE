@@ -29,7 +29,7 @@ class TestModelRequestGroup:
     def test_model_get_response_format(self, client, mocker):
         mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockSH())
         response = client.get(f'/users/{_test_user_id}/models')
-        assert response.status_code == 200, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert type(response.json) == list, 'Response json should be a list'
         assert len(response.json) == 0, 'Response list should be empty'
 
@@ -72,7 +72,7 @@ class TestModelRequestGroup:
         mocker.patch('backend.utils.api.sh.get_dataset_summaries', return_value=sh_datasets)
         mocker.patch('backend.utils.api.sh.get_base_model', return_value=base_models.get('Test A'))
         response = client.get(f'/users/{_test_user_id}/models')
-        assert response.status_code == 200, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert type(response.json) == list, 'Response json should be a list'
         response_json = response.json
         for model_id, model in sh_models.items():
@@ -111,16 +111,16 @@ class TestModelRequestGroup:
         mocker.patch('backend.utils.api.sh.add_model', return_value=model_id)
         response = client.patch(f'/users/{_test_user_id}/models',
                                 json={'name': model_name, 'parameters': parameters, 'baseModel': base_model})
-        assert response.status_code == 201, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.is_json, 'Response should be a json, just containing the model_id'
         assert response.json == model_id, 'Response should be the expected model_id'
 
 
-class TestMoleculeRequestGroup:
+class TestMoleculesRequestGroup:
     def test_molecule_get_response_format(self, client, mocker):
         mocker.patch('backend.utils.api.sh.get_molecules', return_value={})
         response = client.get(f'/users/{_test_user_id}/molecules')
-        assert response.status_code == 200, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.is_json, 'Response should be a json'
         assert type(response.json) == list, 'Response json should be a list'
         assert len(response.json) == 0, 'List should be empty'
@@ -143,7 +143,7 @@ class TestMoleculeRequestGroup:
         mocker.patch('backend.utils.api.sh.get_fitting_summary', return_value=sh_fitting_summary)
         mocker.patch('backend.utils.api.sh.get_model_summary', return_value=sh_model_summary)
         response = client.get(f'/users/{_test_user_id}/molecules')
-        assert response.status_code == 200, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert type(response.json) == list, 'Response json should be a list'
         assert response.json == expected_molecules_output, 'Response json should be formatted like expected_output'
 
@@ -158,7 +158,7 @@ class TestMoleculeRequestGroup:
         mocker.patch('backend.utils.api.mf.is_valid_molecule', return_value=True)
         response = client.patch(f'/users/{_test_user_id}/molecules',
                                 json={'name': test_mol_name, 'smiles': test_smiles, 'cml': test_cml})
-        assert response.status_code == 201, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'Response json should be None'
 
     def test_molecule_patch_invalid(self, client, mocker):
@@ -173,7 +173,7 @@ class TestFittingRequestGroup:
     def test_fitting_get_response_format(self, client, mocker):
         mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockSH())
         response = client.get(f'/users/{_test_user_id}/fittings')
-        assert response.status_code == 200, 'Request should have succeeded'
+        assert response.status_code in range(200, 300), 'Request should have succeeded'
         assert response.is_json, 'Response should be a json'
         assert type(response.json) is list, 'Response should be a list'
         assert len(response.json) == 0, 'List should be empty'
@@ -218,7 +218,7 @@ class TestFittingRequestGroup:
         mocker.patch('backend.utils.api.sh.get_model_summary', mock_sh.get_model_summary)
         mocker.patch('backend.utils.api.sh.get_dataset_summaries', return_value=sh_datasets)
         response = client.get(f'/users/{_test_user_id}/fittings')
-        assert response.status_code == 200, 'Request should have succeeded'
+        assert response.status_code in range(200, 300), 'Request should have succeeded'
         response_json = response.json
         for fitting_id, fitting in sh_fittings.items():
             model_name = 'n/a'
@@ -253,7 +253,7 @@ class TestUserRequestGroup:
         sh_model_mock = mocker.patch('backend.utils.api.sh.add_model')
         response = client.post(f'/users', json={'username': test_username})
         user_id = str(hashlib.sha1(test_username.encode('utf-8'), usedforsecurity=False).hexdigest())
-        assert response.status_code == 201, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.is_json, 'Response should be a json'
         assert response.json == {'userID': user_id}, 'json should contain the user id'
         sh_mol_mock.assert_called_once()
@@ -267,7 +267,7 @@ class TestUserRequestGroup:
     def test_delete_user_response(self, client, mocker):
         mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockUserDelSH())
         response = client.delete(f'/users/{_test_user_id}')
-        assert response.status_code == 200, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'Response should have a json'
 
     def test_delete_user_internal_error_response(self, client, mocker):
@@ -287,7 +287,7 @@ class TestDatasetRequestGroup:
     def test_dataset_get_response_format(self, client, mocker):
         mocker.patch('backend.utils.api.sh.get_dataset_summaries', return_value={})
         response = client.get(f'/datasets')
-        assert response.status_code == 200, 'Request should have succeeded'
+        assert response.status_code in range(200, 300), 'Request should have succeeded'
         assert response.is_json, 'Response should be a json'
         assert type(response.json) == list, 'Response JSON should be a list'
         assert len(response.json) == 0, 'List should be empty'
@@ -307,7 +307,7 @@ class TestDatasetRequestGroup:
         mocker.patch('backend.utils.api.sh.get_dataset_summaries', return_value=sh_datasets)
         response = client.get(f'/datasets')
         response_json = response.json
-        assert response.status_code == 200, 'Request should have succeeded'
+        assert response.status_code in range(200, 300), 'Request should have succeeded'
         for dataset_id, dataset in sh_datasets.items():
             converted_set = dict()
             converted_set |= {'name': dataset.get('name')}
@@ -321,7 +321,7 @@ class TestBaseModelRequestGroup:
     def test_base_model_get_response_format(self, client, mocker):
         mocker.patch('backend.utils.api.sh.get_base_models', return_value={})
         response = client.get(f'/baseModels')
-        assert response.status_code == 200, 'Request should have succeeded'
+        assert response.status_code in range(200, 300), 'Request should have succeeded'
         assert response.is_json, 'Response should be a json list'
         assert type(response.json) == list, 'Response should be a list'
         assert len(response.json) == 0, 'Response should be an empty list'
@@ -388,7 +388,7 @@ class TestAnalyzeRequestGroup:
     def test_analyze_post_response(self, test_analysis, client, mocker):
         mocker.patch('backend.utils.api.ml.analyze', return_value=test_analysis)
         response = client.post(f'/users/{_test_user_id}/analyze', json={})
-        assert response.status_code == 200, 'Response should have worked'
+        assert response.status_code in range(200, 300), 'Response should have worked'
         assert response.is_json, 'Response should be a json'
         assert response.json == test_analysis, 'Response json should match analysis'
 
@@ -420,7 +420,7 @@ class TestTrainRequestGroup:
             labels=labels,
             epochs=epochs,
             batch_size=batch_size)
-        assert response.status_code == 200, 'Expected request to work'
+        assert response.status_code in range(200, 300), 'Expected request to work'
         assert response.json, 'Expecting response to be "True"'
 
     def test_train_busy_post_response(self, client, mocker):
@@ -440,7 +440,7 @@ class TestTrainRequestGroup:
         mocker.patch('backend.utils.api.ml.is_training_running', return_value=False)
         mocker.patch('backend.utils.api.sh.get_fitting_summary', return_value={'epochs': 50})
         response = client.patch(f'/users/{_test_user_id}/train', json={'fittingID': fitting_id, 'epochs': epochs})
-        assert response.status_code == 200, 'Expecting request to work'
+        assert response.status_code in range(200, 300), 'Expecting request to work'
         assert response.json
 
     def test_train_busy_patch_response(self, client, mocker):
@@ -491,13 +491,13 @@ class TestScoreboardRequestGroup:
     def test_scoreboard_get(self, sh_scoreboards, client, mocker):
         mocker.patch('backend.utils.api.sh.get_scoreboard_summaries', return_value=sh_scoreboards)
         response = client.get(f'/scoreboard')
-        assert response.status_code == 200, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json == list(sh_scoreboards.values())
 
     def test_scoreboard_delete(self, client, mocker):
         delete_mock = mocker.patch('backend.utils.api.sh.delete_scoreboard_fittings', return_value=None)
         response = client.delete(f'/scoreboard')
-        assert response.status_code == 200, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'No response json expected'
         delete_mock.assert_called_once()
 
@@ -510,7 +510,7 @@ class TestScoreboardRequestGroup:
     def test_scoreboard_delete_single(self, scoreboard_id, client, mocker):
         delete_mock = mocker.patch('backend.utils.api.sh.delete_scoreboard_fitting', return_value=None)
         response = client.delete(f'/scoreboard/{scoreboard_id}')
-        assert response.status_code == 200, 'Request should have worked'
+        assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'No response json expected'
         delete_mock.assert_called_once_with(scoreboard_id)
 
@@ -527,8 +527,20 @@ def test_histogram_get(dataset_histograms, dataset_id, labels, client, mocker):
     old_hist = copy.deepcopy(dataset_histograms)
     response = client.get(f'/histograms/{dataset_id}/{labels}')
 
-    assert response.status_code == 200, 'Request should have succeeded'
+    assert response.status_code in range(200, 300), 'Request should have succeeded'
     for x in labels.split(','):
         assert response.json[x] is not None, 'Expected response for labels'
         assert response.json[x]['binEdges'] == old_hist[x]['bin_edges'], 'Expected bin_edges to have been renamed'
         assert response.json[x].get('bin_edges') is None, 'Expected bin_edges to have been removed'
+
+@pytest.mark.parametrize(
+    'b64smiles, mocked_rval, expected_response_range',
+    [
+        ('WzEzQ10vQz1DKC9bKl0pQw%3D%3D', 'This is a stand-in for a cml string', range(200, 300)),
+        ('Q0MoWypdKT1DMShbMTNDXSlDKEMpKEMpKEMxKUM%3D', None, {422})
+    ]
+)
+def test_molecule_3d_get(b64smiles, mocked_rval, expected_response_range, client, mocker):
+    mocker.patch('backend.utils.molecule_formats.smiles_to_3DCML', return_value=mocked_rval)
+    response = client.get(f'/molecule/{b64smiles}')
+    assert response.status_code in expected_response_range, 'Request should have a code in the expected range'

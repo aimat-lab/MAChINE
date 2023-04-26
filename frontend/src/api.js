@@ -199,11 +199,9 @@ export default {
   },
 
   /**
-   * Requests to add a molecule for the current user
+   * Requests proper 3D coordinates for a specific SMILES string
    * @param smiles {string} SMILES string of the molecule
-   * @param cml {string} CML string of the molecule
-   * @param name {string} Name of the molecule
-   * @returns {Promise<AxiosResponse<any>>} Promise that returns the server response data (null) without exception handling
+   * @returns {Promise<AxiosResponse<any>>} Promise that returns the server response data without exception handling
    */
   async get3DMolecule(smiles) {
     return api
@@ -213,6 +211,13 @@ export default {
       })
   },
 
+  /**
+   * Requests to add a molecule for the current user
+   * @param smiles {string} SMILES string of the molecule
+   * @param cml {string} CML string of the molecule
+   * @param name {string} Name of the molecule
+   * @returns {Promise<AxiosResponse<any>>} Promise that returns the server response data (null) without exception handling
+   */
   async addMolecule(smiles, cml, name) {
     return api
       .patch(`/users/${userID}/molecules`, {
