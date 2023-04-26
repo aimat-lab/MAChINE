@@ -28,7 +28,9 @@ def smiles_to_3DCML(smiles: str) -> str | None:
     try:
         m = Chem.MolFromSmiles(smiles)
         m = Chem.AddHs(m)
-        AllChem.EmbedMolecule(m)
+        status = AllChem.EmbedMolecule(m, maxAttempts=1000)
+        if status != 0:
+            raise ValueError
         return Chem.MolToCMLBlock(m)
 
     except (IndexError, ValueError, TypeError):
