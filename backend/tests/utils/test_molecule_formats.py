@@ -87,3 +87,21 @@ def test_is_valid_molecule(test_smiles, chem_output, expected_validity, mocker):
     mocker.patch('backend.utils.molecule_formats.Chem.SanitizeMol', return_value=0)
     validity = mf.is_valid_molecule(test_smiles)
     assert validity == expected_validity, 'Expected invalid smiles to be invalid'
+
+
+@pytest.mark.parametrize(
+    'test_smiles',
+    [
+        ('O'),
+        ('COO')
+    ]
+)
+def test_working_3d_generation(test_smiles):
+    cml_code = mf.smiles_to_3DCML(test_smiles)
+    assert cml_code is not None, 'Expecting something'
+    assert type(cml_code) is str, 'Expecting a string'
+
+
+def test_faulty_3d_generation():
+    cml_code = mf.smiles_to_3DCML('awdsda')
+    assert cml_code is None, 'Expecting None on faulty SMILES code'

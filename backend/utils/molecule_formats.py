@@ -18,6 +18,26 @@ def is_valid_molecule(smiles):
         return Chem.SanitizeMol(m, catchErrors=True) == 0
 
 
+def smiles_to_3DCML(smiles: str) -> str | None:
+    """
+    Converts a given smiles code to a CML string with (mostly) correct 3D coordinates.
+
+    :param smiles: A smiles code
+    :return: CML string on success, None on error.
+    """
+    try:
+        m = Chem.MolFromSmiles(smiles)
+        m = Chem.AddHs(m)
+        status = AllChem.EmbedMolecule(m, maxAttempts=1000)
+        if status != 0:
+            raise ValueError
+        return Chem.MolToCMLBlock(m)
+
+    except (IndexError, ValueError, TypeError):
+        print(f'ERROR: Could not generate proper 3D Coordinates for "{smiles}"')
+        return None
+
+
 def smiles_to_fingerprint(smiles, fingerprint_size=128, radius=2):
     """
     Converts a smiles code to a fingerprint vector with the given parameters

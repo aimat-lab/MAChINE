@@ -6,6 +6,7 @@ import {
   Card,
   CardActions,
   CardContent,
+  CircularProgress,
   Grid,
   TextField,
   useTheme,
@@ -191,6 +192,8 @@ export default function MoleculesPage() {
 function MoleculeView({ selectedMolecule, onSave }) {
   const [editorHeight, editorWidth] = ['70vh', '100%']
   const [moleculeDoc, setMoleculeDoc] = React.useState(null)
+  const [viewerDoc, setViewerDoc] = React.useState(null)
+  const [converting, setConverting] = React.useState(false)
   const [molName, setMolName] = React.useState('')
   const [show3D, setShow3D] = React.useState(false)
   const navigate = useNavigate()
@@ -225,6 +228,47 @@ function MoleculeView({ selectedMolecule, onSave }) {
     }
   }
 
+  /**
+   * Updates the chemDocument shown by the 3D viewer by sending the current molecule to the backend for conversion.
+   * In case the molecule can't be converted, it uses the regular 3D-ification provided by Kekule.
+   * If there is no drawn molecule, it makes sure the 3D View is blank.
+   * @returns {Promise<AxiosResponse<*> | void>} A promise that's resolved when the api call is done. Or nothing
+   */
+  async function updateViewerDoc() {
+    if (moleculeDoc && moleculeDoc.getChildCount() > 0) {
+      const smiles = Kekule.IO.saveFormatData(moleculeDoc.getChildAt(0), 'smi')
+      return api
+        .get3DMolecule(smiles)
+        .then((converted) => {
+          if (converted) {
+            setViewerDoc(Kekule.IO.loadFormatData(converted, 'cml'))
+          }
+        })
+        .catch(() => setViewerDoc(moleculeDoc))
+    } else {
+      setViewerDoc(new Kekule.ChemDocument())
+    }
+  }
+
+  /**
+   * Function called when switching between 2D and 3D views.
+   * Handles variable changes required for the process to work.
+   */
+  async function changeView() {
+    if (!show3D) {
+      setConverting(true)
+      updateViewerDoc()
+        .then(() => setShow3D(true))
+        .finally(() => setConverting(false))
+    } else {
+      setShow3D(false)
+    }
+  }
+
+  React.useEffect(() => {
+    updateViewerDoc().then()
+  }, [moleculeDoc])
+
   return (
     <Card sx={{ maxHeight: gridHeight, height: gridHeight, overflow: 'auto' }}>
       <CardContent>
@@ -236,7 +280,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
         >
           {show3D === true ? (
             <MoleculeRenderer
-              moleculeDoc={moleculeDoc}
+              moleculeDoc={viewerDoc}
               width={editorWidth}
               height={editorHeight}
             />
@@ -290,11 +334,14 @@ function MoleculeView({ selectedMolecule, onSave }) {
         <Button
           size="large"
           variant="contained"
-          onClick={() => setShow3D(!show3D)}
-          endIcon={<VisibilityIcon />}
+          onClick={changeView}
+          endIcon={!converting ? <VisibilityIcon /> : null}
           sx={{ ml: 12 }}
         >
           Switch to {show3D ? '2D-Editor' : '3D-Viewer'}
+          {converting ? (
+            <CircularProgress size="16px" color="inherit" sx={{ ml: 1 }} />
+          ) : null}
         </Button>
         <Box sx={{ flexGrow: 1 }}></Box>
         <Button

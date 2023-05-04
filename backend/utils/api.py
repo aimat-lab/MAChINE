@@ -2,6 +2,7 @@ import hashlib
 import json
 import sched
 import time
+import base64
 
 from flask import Flask
 from flask_cors import CORS
@@ -149,6 +150,24 @@ class Molecules(Resource):
         # Only actually add molecules if Chem can handle the smiles code. Prevents errors further down the line
         if mf.is_valid_molecule(smiles):
             return sh.add_molecule(user_id, args['smiles'], args['cml'], args['name']), 201
+        return None, 422
+
+
+class Molecule(Resource):
+    """
+    GET a cml document for a given base64-encoded smiles code
+    """
+    def get(self, b64_smiles) -> tuple[(str | None), int]:
+        """
+        GET a CML string containing a 3D conversion of a base64 encoded smiles code
+
+        :param b64_smiles: A base64 encoded smiles code
+        :return: Tuple of the CML-String and a response code, or None and a response code
+        """
+        smiles = base64.b64decode(b64_smiles).decode('utf8')
+        converted = mf.smiles_to_3DCML(smiles)
+        if converted:
+            return converted, 200
         return None, 422
 
 
@@ -393,7 +412,7 @@ class Train(Resource):
                                   labels=labels,
                                   epochs=args['epochs'],
                                   batch_size=args['batchSize'])
-        return True, 200
+        return True, 202
 
     def patch(self, user_id):
         """
@@ -416,7 +435,7 @@ class Train(Resource):
                                   user_id=user_id,
                                   fitting_id=args['fittingID'],
                                   epochs=args['epochs'])
-        return (fitting_summary.get('epochs') + args['epochs']), 200
+        return (fitting_summary.get('epochs') + args['epochs']), 202
 
     def delete(self, user_id):
         """
@@ -440,6 +459,7 @@ api.add_resource(Scoreboard, '/scoreboard/<fitting_id>', '/scoreboard')
 api.add_resource(Datasets, '/datasets')
 api.add_resource(Histograms, '/histograms/<dataset_id>/<labels>')
 api.add_resource(BaseModels, '/baseModels')
+api.add_resource(Molecule, '/molecule/<b64_smiles>')
 
 
 # SocketIO event listeners/senders

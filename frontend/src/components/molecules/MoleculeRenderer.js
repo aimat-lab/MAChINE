@@ -13,7 +13,6 @@ chemViewer.setEnableToolbar(true)
 // only allow these tools
 chemViewer.setToolButtons([
   'molDisplayType',
-  'molHideHydrogens',
   'zoomIn',
   'zoomOut',
   'rotateLeft',
