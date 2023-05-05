@@ -6,9 +6,9 @@ import { camelToNaturalString } from '../utils'
 /**
  * Provides information about the currently running training.
  * @property {boolean} trainingStatus True while training is running.
- * @property {function} setTrainingStatus Sets the training status.
  * @property {boolean} trainingStopped True when training was stopped manually.
  * @property {boolean} trainingFinished True when training is over (including on manual stop).
+ * @property {boolean} trainingFailed True when training ended via error.
  * @property {string} trainingID Set after first training is finished. On training start set to '0'.
  * @property {ModelConfig} selectedModel Selected Model for the training process.
  * @property {function} setSelectedModel Sets the selected model.

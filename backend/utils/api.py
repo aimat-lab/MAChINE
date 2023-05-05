@@ -16,7 +16,8 @@ from backend.utils import storage_handler as sh
 app = Flask(__name__)
 cors = CORS(app)
 api = Api(app)
-sio = SocketIO(app, cors_allowed_origins='*', async_mode="threading", logger=bool(__debug__), engineio_logger=bool(__debug__))
+sio = SocketIO(app, cors_allowed_origins='*', async_mode="threading", logger=bool(__debug__),
+               engineio_logger=bool(__debug__))
 
 scheduler = sched.scheduler(time.time, sio.sleep)
 
@@ -44,6 +45,7 @@ class Models(Resource):
     GET a list of all models for given user ID
     PATCH to add new models to user data
     """
+
     def get(self, user_id):
         """
         Get a list of all models in data of user with given ID
@@ -101,6 +103,7 @@ class Molecules(Resource):
     GET a list of all molecules for given user ID
     PATCH to add new molecules to user data
     """
+
     def get(self, user_id):
         """
         Gets all molecules in storage of user with given user ID and converts them to frontend compatible format
@@ -157,6 +160,7 @@ class Molecule(Resource):
     """
     GET a cml document for a given base64-encoded smiles code
     """
+
     def get(self, b64_smiles) -> tuple[(str | None), int]:
         """
         GET a CML string containing a 3D conversion of a base64 encoded smiles code
@@ -175,6 +179,7 @@ class Fittings(Resource):
     """
     GET a list of all fittings for given user ID
     """
+
     def get(self, user_id):
         """
         Gets fittings from user with given user ID and converts each to frontend-compatible format
@@ -212,6 +217,7 @@ class Scoreboard(Resource):
     GET current contents of the scoreboard
     DELETE fitting with given ID from scoreboard. If no ID is given, delete all fittings from scoreboard
     """
+
     def get(self):
         """
         GET current contents of the scoreboard
@@ -238,6 +244,7 @@ class User(Resource):
     POST a new user
     DELETE a user with given id
     """
+
     def post(self):
         """
         Add a new user
@@ -284,7 +291,7 @@ class User(Resource):
                                                 }],
                                                 'lossFunction': 'Huber Loss',
                                                 'optimizer': 'Stochastic Gradient Descent'}, '1')
-        
+
             return {'userID': user_id}, 201
         return None, 404
 
@@ -304,6 +311,7 @@ class Datasets(Resource):
     """
     GET a list of descriptions of available datasets
     """
+
     def get(self):
         """
         Converts the stored Dataset summaries to the frontend format
@@ -343,6 +351,7 @@ class BaseModels(Resource):
     """
     GET a list of available base models
     """
+
     def get(self):
         """
         Converts the stored base model to the frontend format
@@ -393,6 +402,7 @@ class Train(Resource):
     PATCH the continuance of an existing training
     DELETE the current training
     """
+
     def post(self, user_id):
         """
         Initiates a new training from given arguments
@@ -462,12 +472,26 @@ api.add_resource(BaseModels, '/baseModels')
 api.add_resource(Molecule, '/molecule/<b64_smiles>')
 
 
+# SocketIO event listeners/senders
 def notify_training_start(user_id, epochs):
+    """
+    Sends a "started" message to every connected socket and clears the scheduler
+    :param user_id: ID of the user the started message is intended to be received by
+    :param epochs: Number of epochs the training started at
+    :return: None
+    """
     scheduler.empty()
     sio.emit('started', {user_id: epochs})
 
-# SocketIO event listeners/senders
+
 def update_training_logs(user_id, logs):
+    """
+    Schedules an "update" message and starts scheduler if it's not already active
+    Interval is set to be 0.3 sec between every message.
+    :param user_id: ID of the user the "update" message is intended to be received by
+    :param logs: Log dictionary containing training data
+    :return: None
+    """
     # Schedules updates 0.3 secs apart at least
     scheduler.enter(0.3 * (len(scheduler.queue) + 1),
                     2,
@@ -479,6 +503,15 @@ def update_training_logs(user_id, logs):
 
 
 def notify_training_done(user_id, fitting_id, epochs_trained, accuracy):
+    """
+    Schedules a "done" message and starts scheduler if it's not already active
+    Interval is set to be 0.3 sec between every message.
+    :param user_id: ID of the user the "done" message is intended to be received by
+    :param fitting_id: Unique ID of the fitting created by the training
+    :param epochs_trained: Total epochs the model was trained for in this training
+    :param accuracy: Accuracy of the model
+    :return: None
+    """
     scheduler.enter(0.3 * (len(scheduler.queue) + 1),
                     2,
                     sio.emit,
@@ -487,6 +520,12 @@ def notify_training_done(user_id, fitting_id, epochs_trained, accuracy):
 
 
 def notify_training_error(user_id):
+    """
+    Sends an "error" message to every connected socket and clears the scheduler
+    The sockets then filter these messages to check if it applies to them.
+    :param user_id: ID of the user the started message is intended to be received by
+    :return: None
+    """
     scheduler.empty()
     sio.emit('error', {user_id: True})
 
@@ -563,7 +602,7 @@ def run(debug=True):
     try:
         sio.run(app, allow_unsafe_werkzeug=True)  # add parameters here to change ip address
     except TypeError:
-        sio.run(app) # run without allow_unsafe_werkzeug for production
+        sio.run(app)  # run without allow_unsafe_werkzeug for production
 
 
 if __name__ == '__main__':
