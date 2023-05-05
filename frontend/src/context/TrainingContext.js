@@ -32,6 +32,7 @@ const TrainingContext = React.createContext({
   trainingStatus: true,
   trainingStopped: false,
   trainingFinished: false,
+  trainingFailed: false,
   setTrainingFinished: () => {},
   trainingID: '0',
   selectedModel: null,
@@ -62,6 +63,7 @@ export const TrainingProvider = ({ children }) => {
   const [trainingStatus, setTrainingStatus] = React.useState(true)
   const [trainingStopped, setTrainingStopped] = React.useState(false)
   const [trainingFinished, setTrainingFinished] = React.useState(false)
+  const [trainingFailed, setTrainingFailed] = React.useState(false)
   const [trainingID, setTrainingID] = React.useState('0')
   const [selectedModel, setSelectedModel] = React.useState(undefined)
   const [selectedDataset, setSelectedDataset] = React.useState(undefined)
@@ -95,6 +97,11 @@ export const TrainingProvider = ({ children }) => {
       setTrainingID(response.fittingID)
       setSelectedEpochs(response.epochs)
       setFinishedAccuracy(response.accuracy)
+    })
+    api.registerSocketListener('error', (response) => {
+      setTrainingStopped(true)
+      setTrainingStatus(false)
+      setTrainingFailed(true)
     })
   }, [])
 
@@ -145,6 +152,7 @@ export const TrainingProvider = ({ children }) => {
     setTrainingStatus(false)
     setTrainingStopped(false)
     setTrainingFinished(false)
+    setTrainingFailed(false)
     setTrainingID('0')
     dispatchTrainingData({ type: 'reset' })
   }
@@ -169,6 +177,7 @@ export const TrainingProvider = ({ children }) => {
         trainingStatus,
         trainingStopped,
         trainingFinished,
+        trainingFailed,
         setTrainingFinished,
         trainingID,
         selectedModel,

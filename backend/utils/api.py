@@ -462,6 +462,10 @@ api.add_resource(BaseModels, '/baseModels')
 api.add_resource(Molecule, '/molecule/<b64_smiles>')
 
 
+def notify_training_start(user_id, epochs):
+    scheduler.empty()
+    sio.emit('started', {user_id: epochs})
+
 # SocketIO event listeners/senders
 def update_training_logs(user_id, logs):
     # Schedules updates 0.3 secs apart at least
@@ -482,9 +486,9 @@ def notify_training_done(user_id, fitting_id, epochs_trained, accuracy):
     sio.start_background_task(scheduler.run, blocking=True)
 
 
-def notify_training_start(user_id, epochs):
+def notify_training_error(user_id):
     scheduler.empty()
-    sio.emit('started', {user_id: epochs})
+    sio.emit('error', {user_id: True})
 
 
 def run(debug=True):

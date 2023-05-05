@@ -50,6 +50,12 @@ export default function TrainingPage() {
     }
   }, [training.trainingStatus])
 
+  React.useEffect(() => {
+    if (training.trainingFailed) {
+      // TODO: DISPLAY POPUP
+    }
+  }, [training.trainingFailed])
+
   const handleStartStop = () => {
     if (training.trainingStatus) {
       setShowDialog(true)
