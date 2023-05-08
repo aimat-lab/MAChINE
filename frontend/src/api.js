@@ -288,7 +288,7 @@ export default {
    * Train referenced model with given dataset on given labels for given epochs with given batch size
    * @param datasetID {string} ID of dataset to train on
    * @param modelID {string} ID of model to train
-   * @param labels {string} List of labels to train on
+   * @param labels {array} List of labels to train on
    * @param epochs {number} Number of epochs to train for
    * @param batchSize {number} Batch size to train with
    * @returns {Promise<AxiosResponse<any>>} Promise of Tuple of Boolean indicating success and HTTP response code

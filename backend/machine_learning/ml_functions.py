@@ -104,7 +104,7 @@ def train(user_id, dataset_id, model_id, labels, epochs, batch_size, fitting_id=
     except (TypeError, AttributeError, ValueError):
         with lock:
             del live_trainings[user_id]
-        api.notify_training_error(user_id);
+        api.notify_training_error(user_id)
         return False
 
     return True
