@@ -253,7 +253,8 @@ class User(Resource):
         """
         args = parser.parse_args()
         # Create the user_id
-        user_id = str(hashlib.sha1(args['username'].encode('utf-8'), usedforsecurity=False).hexdigest())
+        user_id = str(hashlib.sha1((str(args['username']) + str(time.time())).encode('utf-8'), usedforsecurity=(not bool(__debug__))).hexdigest())
+        print(user_id, str(args['username']))
         # This line means that if a user forgets to log out that username is blocked from there on
         if sh.get_user_handler(user_id) and not bool(__debug__):
             return None, 409

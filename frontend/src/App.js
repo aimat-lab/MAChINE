@@ -52,11 +52,11 @@ export default function App() {
   }, [])
 
   // Log the user in (or register if you will)
-  async function login(newUserName) {
+  async function login(newUserName, scoreboardConsent) {
     if (userName !== null) logout()
     // setRunOnboarding(true) // Uncomment to run onboarding on login
     return api
-      .completeLogin(newUserName)
+      .completeLogin(scoreboardConsent ? newUserName : undefined)
       .then((r) => {
         if (r) {
           setUserName(newUserName)
