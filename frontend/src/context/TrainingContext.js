@@ -98,7 +98,7 @@ export const TrainingProvider = ({ children }) => {
       setSelectedEpochs(response.epochs)
       setFinishedAccuracy(response.accuracy)
     })
-    api.registerSocketListener('error', (response) => {
+    api.registerSocketListener('error', () => {
       setTrainingStopped(true)
       setTrainingStatus(false)
       setTrainingFailed(true)
