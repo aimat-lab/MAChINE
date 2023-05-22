@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="AIMat" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" filePermissions="444" folderPermissions="509" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="AIMat">
         <serverdata>
@@ -13,6 +13,8 @@
             <excludedPath local="true" path="$PROJECT_DIR$/frontend/node_modules" />
             <excludedPath local="true" path="$PROJECT_DIR$/frontend/build" />
             <excludedPath local="true" path="$PROJECT_DIR$/backend/venv" />
+            <excludedPath local="true" path="$PROJECT_DIR$/backend/storage/user_data" />
+            <excludedPath path="/backend/storage/user_data" />
           </excludedPaths>
         </serverdata>
       </paths>
