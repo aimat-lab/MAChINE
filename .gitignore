@@ -117,5 +117,8 @@ modules.xml
 .idea/pse.iml
 /desktop.ini
 
+.idea/sshConfigs.xml
+.idea/webServers.xml
+
 test-report.html
 
