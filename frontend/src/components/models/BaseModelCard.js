@@ -8,8 +8,8 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
-import { LongPressEventType, useLongPress } from 'use-long-press'
 import PropTypes from 'prop-types'
+import { touchInputHandler } from '../../utils'
 
 /**
  * A base model card is utilized in the process of the user creating a model.
@@ -27,30 +27,13 @@ export default function BaseModelCard({
   hoverFunc,
   leaveFunc,
 }) {
-  const [helpAnchorEl, setHelpAnchorEl] = React.useState(null)
   const theme = useTheme()
 
   /** The longPress function is used to detect a long press on a base model card.
    *  It is used to trigger the hoverFunc for touch input devices.
    *  The click function of the card has been moved here, so it only triggers when the long press is aborted.
    **/
-  const longPress = useLongPress(
-    () => {
-      hoverFunc(helpAnchorEl)
-      setHelpAnchorEl(null)
-    },
-    {
-      onCancel: () => clickFunc(baseModel),
-      onStart: (e) => {
-        setHelpAnchorEl(e.currentTarget)
-      },
-      filterEvents: () => true, // All events can potentially trigger long press
-      threshold: 350,
-      captureEvent: true,
-      cancelOnMovement: false,
-      detect: LongPressEventType.Touch,
-    }
-  )
+  const longPress = touchInputHandler({ hoverFunc, clickFunc })
 
   return (
     <Grid item xs={4} md={3}>
@@ -61,6 +44,11 @@ export default function BaseModelCard({
         <CardActionArea
           className={`base-model-card id-${baseModel.id}`}
           {...longPress()}
+          onMouseLeave={leaveFunc}
+          onMouseOver={(e) => {
+            hoverFunc(e.currentTarget)
+          }}
+          onClick={() => clickFunc(baseModel)}
         >
           <Box position="relative">
             <Box
