@@ -29,7 +29,7 @@ __all__ = ['add_analysis',
            'get_user_handler',
            'update_fitting']
 
-_storage_path = Path.cwd() / 'storage'
+_storage_path = Path(__file__.replace('storage_handler.py', '')) / '..' / 'storage'
 _user_data_path = _storage_path / 'user_data'
 _datasets_path = _storage_path / 'data'
 _base_models_path = _storage_path / 'models'
