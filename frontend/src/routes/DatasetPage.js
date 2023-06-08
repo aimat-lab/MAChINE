@@ -33,9 +33,9 @@ export default function DatasetPage() {
     setOpen(show)
   }
 
-  const handleHelpPopperOpen = (event, content) => {
+  const handleHelpPopperOpen = (target, content) => {
     if (help.helpMode) {
-      setHelpAnchorEl(event.currentTarget)
+      setHelpAnchorEl(target)
       setHelpPopperContent(content)
     }
   }
@@ -44,11 +44,11 @@ export default function DatasetPage() {
     setHelpAnchorEl(null)
   }
 
-  const datasetCardClick = (event, dataset) => {
+  const datasetCardClick = (target, dataset) => {
     handlePopper(
-      event.currentTarget,
+      target,
       <DatasetInfo dataset={dataset} key={dataset.datasetID} />,
-      event.currentTarget !== anchor || !open
+      target !== anchor || !open
     )
   }
 
@@ -65,10 +65,10 @@ export default function DatasetPage() {
           <DatasetCard
             dataset={dataset}
             key={dataset.datasetID}
-            clickFunc={(event) => datasetCardClick(event, dataset)}
-            hoverFunc={(e) => {
+            clickFunc={(target) => datasetCardClick(target, dataset)}
+            hoverFunc={(target) => {
               handleHelpPopperOpen(
-                e,
+                target,
                 "Click to select the dataset you want to train on. \n After choosing your label(s), it's time to start training!"
               )
             }}

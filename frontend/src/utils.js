@@ -91,6 +91,7 @@ export const activationFuncs = [
 /**
  * Handles touch events
  * Differentiates between long press and click
+ * TODO: Eliminate flickering with Windows Touch
  * @param longPressCallback callback to be called on long press
  * @param clickCallback callback to be called when long press is aborted
  * @returns LongPressHandlers to be included in component props

@@ -29,10 +29,6 @@ export default function BaseModelCard({
 }) {
   const theme = useTheme()
 
-  /** The longPress function is used to detect a long press on a base model card.
-   *  It is used to trigger the hoverFunc for touch input devices.
-   *  The click function of the card has been moved here, so it only triggers when the long press is aborted.
-   **/
   const longPress = touchInputHandler({ hoverFunc, clickFunc })
 
   return (
