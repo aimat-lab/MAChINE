@@ -7,7 +7,6 @@ import {
   DialogActions,
   DialogTitle,
   Grid,
-  TextField,
   Typography,
   useTheme,
 } from '@mui/material'
@@ -20,6 +19,7 @@ import HelpPopper from '../components/shared/HelpPopper'
 import HelpContext from '../context/HelpContext'
 import TrainingContext from '../context/TrainingContext'
 import { useNavigate } from 'react-router-dom'
+import TrainingParameterFields from '../components/training/TrainingParameterFields'
 
 /**
  * Holds epoch and batch size configuration, as well as selected model and dataset details
@@ -32,52 +32,13 @@ export default function TrainingPage() {
   const [helpAnchorEl, setHelpAnchorEl] = React.useState(null)
   const [helpPopperContent, setHelpPopperContent] = React.useState('')
   const [localEpochs, setLocalEpochs] = React.useState(training.selectedEpochs)
-  const [epochsError, setEpochsError] = React.useState(false)
-  const [batchSizeError, setBatchSizeError] = React.useState(false)
+  const [parameterError, setParameterError] = React.useState(false)
   const [startStopButton, setStartStopButton] = React.useState('Start')
   const [loadTraining, setLoadTraining] = React.useState(false)
   const [openSnackError, setOpenSnackError] = React.useState(false)
   const [showFinishDialog, setShowFinishDialog] = React.useState(false)
   const theme = useTheme()
   const navigate = useNavigate()
-  const initialMount = React.useRef(true)
-
-  const checkEpochs = (epochs) => {
-    if (epochs > 0) {
-      setEpochsError(false)
-    } else {
-      setEpochsError(true)
-    }
-  }
-
-  const checkBatchSize = (batchSize) => {
-    if (batchSize > 0) {
-      setBatchSizeError(false)
-    } else {
-      setBatchSizeError(true)
-    }
-  }
-  // check batch size on change
-  React.useEffect(() => {
-    checkBatchSize(training.selectedBatchSize)
-    if (initialMount.current) {
-      initialMount.current = false
-    } else {
-      training.setTrainingFinished(false)
-    }
-    return () => {
-      training.setTrainingFinished(false)
-    }
-  }, [training.selectedBatchSize])
-
-  // check epochs on change
-  React.useEffect(() => {
-    checkEpochs(localEpochs)
-  }, [localEpochs])
-
-  React.useEffect(() => {
-    setLocalEpochs(training.selectedEpochs)
-  }, [training.selectedEpochs])
 
   React.useEffect(() => {
     if (training.trainingStatus) {
@@ -153,9 +114,9 @@ export default function TrainingPage() {
     setShowFinishDialog(false)
   }
 
-  const handleHelpPopperOpen = (event, content) => {
+  const handleHelpPopperOpen = (target, content) => {
     if (help.helpMode) {
-      setHelpAnchorEl(event.currentTarget)
+      setHelpAnchorEl(target)
       setHelpPopperContent(content)
     }
   }
@@ -167,55 +128,21 @@ export default function TrainingPage() {
   return (
     <Grid container>
       <Grid item xs={6}>
-        {/* set the epochs and batch size here for quick change */}
         <Grid item sx={{ display: 'flex' }}>
-          <TextField
-            sx={{ mx: 3, mt: 3, flexGrow: 1 }}
-            required
-            id="epochs"
-            label="Epochs"
-            type="number"
-            value={localEpochs}
-            disabled={training.trainingStatus || loadTraining}
-            onChange={(event) => setLocalEpochs(event.target.value)}
-            error={epochsError}
-            helperText={epochsError ? 'Must be a number > 0!' : ' '}
-            onMouseOver={(e) => {
-              handleHelpPopperOpen(
-                e,
-                'This determines how long your model is trained. In each epoch, the entire dataset is passed through your net once.'
-              )
-            }}
-            onMouseLeave={handleHelpPopperClose}
-          />
-          <TextField
-            sx={{ mx: 3, mt: 3, flexGrow: 1 }}
-            required
-            id="batchsize"
-            label="Batch Size"
-            type="number"
-            value={training.selectedBatchSize}
-            disabled={training.trainingStatus || loadTraining}
-            onChange={(event) =>
-              training.setSelectedBatchSize(event.target.value)
-            }
-            error={batchSizeError}
-            helperText={batchSizeError ? 'Must be a number > 0!' : ' '}
-            onMouseOver={(e) => {
-              handleHelpPopperOpen(
-                e,
-                "The batch size determines how often the net's parameters are adjusted. The smaller the batch size, the more often that's the case!"
-              )
-            }}
-            onMouseLeave={handleHelpPopperClose}
+          <TrainingParameterFields
+            helpOpen={handleHelpPopperOpen}
+            helpClose={handleHelpPopperClose}
+            epochs={localEpochs}
+            setEpochs={setLocalEpochs}
+            errorCallback={setParameterError}
           />
         </Grid>
 
         <ModelDetailsCard
           selectedModel={training.selectedModel}
-          hoverFunc={(e) => {
+          hoverFunc={(target) => {
             handleHelpPopperOpen(
-              e,
+              target,
               'Here you can see basic informations about your model. Among them are your chosen values for the optimizer, the loss, and other model-specific data.'
             )
           }}
@@ -224,9 +151,9 @@ export default function TrainingPage() {
         <DatasetDetailsCard
           selectedDataset={training.selectedDataset}
           selectedLabels={training.selectedLabels}
-          hoverFunc={(e) => {
+          hoverFunc={(target) => {
             handleHelpPopperOpen(
-              e,
+              target,
               'Here you can see basic information about your chosen dataset. Most importantly, its size, and which label you chose to train on!'
             )
           }}
@@ -237,7 +164,7 @@ export default function TrainingPage() {
         <Box
           onMouseOver={(e) => {
             handleHelpPopperOpen(
-              e,
+              e.currentTarget,
               'This chart shows the progression of your model in training. On the x-axis, you can see for how many epochs your model has been trained. Take a look at the different functions: They tell you how good your model is in predicting data from the dataset. For loss: The lower, the better! For r-squared: The closer to 1, the better (and a negative value is very bad).'
             )
           }}
@@ -253,7 +180,7 @@ export default function TrainingPage() {
             <Button
               size="large"
               variant="contained"
-              disabled={epochsError || batchSizeError}
+              disabled={parameterError}
               sx={{ m: 2 }}
               onClick={handleStartStop}
             >
@@ -273,7 +200,7 @@ export default function TrainingPage() {
               <Button
                 size="large"
                 variant="outlined"
-                disabled={epochsError || loadTraining}
+                disabled={parameterError || loadTraining}
                 sx={{ m: 2 }}
                 onClick={handleAdditionalTraining}
               >
