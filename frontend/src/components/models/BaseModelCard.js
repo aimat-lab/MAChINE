@@ -9,6 +9,7 @@ import {
   useTheme,
 } from '@mui/material'
 import PropTypes from 'prop-types'
+import { touchInputHandler } from '../../utils'
 
 /**
  * A base model card is utilized in the process of the user creating a model.
@@ -28,6 +29,8 @@ export default function BaseModelCard({
 }) {
   const theme = useTheme()
 
+  const longPress = touchInputHandler({ hoverFunc, clickFunc })
+
   return (
     <Grid item xs={4} md={3}>
       {/* ^ The grid has a total width of  12. The xs defines how much of that width each component of the grid gets,
@@ -35,10 +38,13 @@ export default function BaseModelCard({
        row of width 3*4=12 */}
       <Card>
         <CardActionArea
-          onClick={() => clickFunc(baseModel)}
-          onMouseOver={(e) => hoverFunc(e)}
-          onMouseLeave={() => leaveFunc()}
           className={`base-model-card id-${baseModel.id}`}
+          {...longPress()}
+          onMouseLeave={leaveFunc}
+          onMouseOver={(e) => {
+            hoverFunc(e.currentTarget)
+          }}
+          onClick={() => clickFunc(baseModel)}
         >
           <Box position="relative">
             <Box

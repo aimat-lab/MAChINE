@@ -8,6 +8,7 @@ import {
   useTheme,
 } from '@mui/material'
 import PropTypes from 'prop-types'
+import { touchInputHandler } from '../../utils'
 
 /**
  * Card depicting given dataset's details
@@ -24,14 +25,18 @@ export default function DatasetCard({
   leaveFunc,
 }) {
   const theme = useTheme()
+
+  const longPress = touchInputHandler({ hoverFunc, clickFunc })
+
   return (
     <Card>
       <CardActionArea
+        {...longPress()}
         onClick={(e) => {
-          clickFunc(e)
+          clickFunc(e.currentTarget)
         }}
         onMouseOver={(e) => {
-          hoverFunc(e)
+          hoverFunc(e.currentTarget)
         }}
         onMouseLeave={leaveFunc}
       >

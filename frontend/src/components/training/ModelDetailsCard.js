@@ -28,7 +28,7 @@ export default function ModelDetailsCard({
     <Card
       sx={{ m: 3 }}
       onMouseOver={(e) => {
-        hoverFunc(e)
+        hoverFunc(e.currentTarget)
       }}
       onMouseLeave={leaveFunc}
     >

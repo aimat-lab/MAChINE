@@ -24,9 +24,9 @@ export default function BaseModelsPage() {
     })
   }, [])
 
-  const handleHelpPopperOpen = (event, content) => {
+  const handleHelpPopperOpen = (target, content) => {
     if (help.helpMode) {
-      setHelpAnchorEl(event.currentTarget)
+      setHelpAnchorEl(target)
       setHelpPopperContent(content)
     }
   }
@@ -52,9 +52,9 @@ export default function BaseModelsPage() {
             baseModel={baseModel}
             key={baseModel.id}
             clickFunc={handleClick}
-            hoverFunc={(e) => {
+            hoverFunc={(target) => {
               handleHelpPopperOpen(
-                e,
+                target,
                 "Click here to select this base model. Don't worry, you'll get to configure its parameters on the next page!"
               )
             }}

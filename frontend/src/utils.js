@@ -1,4 +1,8 @@
 // Nothing so see here...
+import { LongPressEventType, useLongPress } from 'use-long-press'
+import React from 'react'
+import PropTypes from 'prop-types'
+
 const pattern = [
   'ArrowUp',
   'ArrowUp',
@@ -84,3 +88,36 @@ export const activationFuncs = [
   'ELU',
   'Exponential',
 ]
+
+/**
+ * Handles touch events
+ * Differentiates between long press and click
+ * @param longPressCallback callback to be called on long press
+ * @param clickCallback callback to be called when long press is aborted
+ * @returns LongPressHandlers to be included in component props
+ */
+export function touchInputHandler({ longPressCallback, clickCallback }) {
+  const [currentTarget, setTarget] = React.useState(null)
+  return useLongPress(
+    () => {
+      longPressCallback(currentTarget)
+      setTarget(null)
+    },
+    {
+      onCancel: clickCallback,
+      onStart: (e) => {
+        setTarget(e.currentTarget)
+      },
+      filterEvents: () => true, // All events can potentially trigger long press
+      threshold: 350,
+      captureEvent: true,
+      cancelOnMovement: false,
+      detect: LongPressEventType.Touch,
+    }
+  )
+}
+
+touchInputHandler.propTypes = {
+  longPressCallback: PropTypes.func,
+  clickCallback: PropTypes.func,
+}
