@@ -10,7 +10,12 @@ import PropTypes from 'prop-types'
  * @returns {JSX.Element} The MUI card with helpful text inside
  * @constructor
  */
-export default function HelpPopper({ helpPopperContent, open, anchorEl }) {
+export default function HelpPopper({
+  helpPopperContent,
+  open,
+  anchorEl,
+  placement,
+}) {
   const theme = useTheme()
   return (
     <Popper
@@ -21,7 +26,7 @@ export default function HelpPopper({ helpPopperContent, open, anchorEl }) {
       }}
       open={open}
       anchorEl={anchorEl}
-      placement={'right'}
+      placement={placement}
       modifiers={[
         {
           // Ensures that the popper doesn't disappear behind the navbar
@@ -55,4 +60,9 @@ HelpPopper.propTypes = {
   helpPopperContent: PropTypes.string.isRequired,
   open: PropTypes.bool.isRequired,
   anchorEl: PropTypes.object,
+  placement: PropTypes.string,
+}
+
+HelpPopper.defaultProps = {
+  placement: 'right',
 }

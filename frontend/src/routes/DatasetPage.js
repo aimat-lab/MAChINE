@@ -88,6 +88,7 @@ export default function DatasetPage() {
           open={Boolean(helpAnchorEl)}
           anchorEl={helpAnchorEl}
           onClose={handleHelpPopperClose}
+          placement="bottom"
         />
       </Box>
     </Box>
