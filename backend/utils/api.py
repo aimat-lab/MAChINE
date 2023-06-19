@@ -1,13 +1,15 @@
 import hashlib
 import json
-import sched
 import time
 import base64
+from threading import Thread
 
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import reqparse, Api, Resource
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room
+
+import queue as gq
 
 from backend.machine_learning import ml_functions as ml
 from backend.utils import molecule_formats as mf
@@ -19,11 +21,15 @@ api = Api(app)
 sio = SocketIO(app, cors_allowed_origins='*', async_mode="threading", logger=bool(__debug__),
                engineio_logger=bool(__debug__))
 
-scheduler = sched.scheduler(time.time, sio.sleep)
+user_socket_queues: dict[str, tuple[gq.Queue, Thread | None]] = dict()
+"""
+Queues for user socket updates
 
+key: user_id, 
+value: Tuple(job queue, thread that runs queue)
 """
-declaration of request arguments
-"""
+
+# declaration of request arguments
 parser = reqparse.RequestParser()
 parser.add_argument('username')
 parser.add_argument('smiles')
@@ -247,13 +253,14 @@ class User(Resource):
 
     def post(self):
         """
-        Add a new user
+        Initializes a new user
         Generate an ID, add new user storage containing example model and molecule
         :return: string containing new user's ID
         """
         args = parser.parse_args()
         # Create the user_id
-        user_id = str(hashlib.sha1((str(args['username']) + str(time.time())).encode('utf-8'), usedforsecurity=(not bool(__debug__))).hexdigest())
+        user_id = str(hashlib.sha1((str(args['username']) + str(time.time())).encode('utf-8'),
+                                   usedforsecurity=(not bool(__debug__))).hexdigest())
         # This line means that if a user forgets to log out that username is blocked from there on
         if sh.get_user_handler(user_id) and not bool(__debug__):
             return None, 409
@@ -298,11 +305,18 @@ class User(Resource):
     def delete(self, user_id):
         """
         Delete storage of user with given ID
+        Unassociate client socket with ID
         :param user_id: String containing ID of user to be deleted
         :return: int, status code depending on failure or success of deletion
         """
         if sh.get_user_handler(user_id):
             sh.delete_user_handler(user_id)
+            # Remove association between user and socket
+
+            assert (user_id in user_socket_queues)
+            # Remove entry from user_socket_queues, this is signal for the thread to stop
+            _, task = user_socket_queues.pop(user_id)
+            task.join()
             return (None, 200) if sh.get_user_handler(user_id) is None else (None, 500)
         return None, 404
 
@@ -472,62 +486,87 @@ api.add_resource(BaseModels, '/baseModels')
 api.add_resource(Molecule, '/molecule/<b64_smiles>')
 
 
+@sio.on('login')
+def on_join(user_id):
+    join_room(user_id)
+    qu = gq.Queue()
+    user_socket_queues[user_id] = (qu, None)
+    task = sio.start_background_task(target=run_socket_queue, user_id=user_id)
+    user_socket_queues[user_id] = (qu, task)
+
+
+# Queue running
+def run_socket_queue(user_id: str):
+    """
+    Emits one socket event from the queue
+    :param user_id: user_id of the user the event is intended to be received by
+    :return: None
+    """
+    while True:
+        sio.sleep(1)
+
+        queue = user_socket_queues.get(user_id, (None, None))[0]
+        # If the queue is empty, stop execution, means the user disconnected
+        if not queue:
+            return
+
+        # If the queue is not empty, emit the next event
+        if not queue.empty():
+            sio.emit(*queue.get(), namespace='/', to=user_id)
+
+
 # SocketIO event listeners/senders
 def notify_training_start(user_id, epochs):
     """
-    Sends a "started" message to every connected socket and clears the scheduler
+    Sends a "started" message to every connected socket and clears the socket queue
     :param user_id: ID of the user the started message is intended to be received by
     :param epochs: Number of epochs the training started at
     :return: None
     """
-    scheduler.empty()
-    sio.emit('started', {user_id: epochs})
+    queue, _ = user_socket_queues.get(user_id, (None, None))
+    if queue:
+        while not queue.empty():
+            queue.get()
+        queue.put(('started', {user_id: epochs}))
 
 
 def update_training_logs(user_id, logs):
     """
-    Schedules an "update" message and starts scheduler if it's not already active
-    Interval is set to be 0.3 sec between every message.
+    Queues an update message to be sent to the user
     :param user_id: ID of the user the "update" message is intended to be received by
     :param logs: Log dictionary containing training data
     :return: None
     """
-    # Schedules updates 0.3 secs apart at least
-    scheduler.enter(0.3 * (len(scheduler.queue) + 1),
-                    2,
-                    sio.emit,
-                    ('update', {user_id: logs}))
-    # blocking is required to schedule messages correctly, but can't block main process
-    # Starts the scheduler as a blocking background task
-    sio.start_background_task(scheduler.run, blocking=True)
+    queue, _ = user_socket_queues.get(user_id, (None, None))
+    if queue:
+        queue.put(('update', {user_id: logs}))
 
 
 def notify_training_done(user_id, fitting_id, epochs_trained, accuracy):
     """
-    Schedules a "done" message and starts scheduler if it's not already active
-    Interval is set to be 0.3 sec between every message.
+    Queues a "done" message to be sent to the user
     :param user_id: ID of the user the "done" message is intended to be received by
     :param fitting_id: Unique ID of the fitting created by the training
     :param epochs_trained: Total epochs the model was trained for in this training
     :param accuracy: Accuracy of the model
     :return: None
     """
-    scheduler.enter(0.3 * (len(scheduler.queue) + 1),
-                    2,
-                    sio.emit,
-                    ('done', {user_id: {'fittingID': fitting_id, 'epochs': epochs_trained, 'accuracy': accuracy}}))
-    sio.start_background_task(scheduler.run, blocking=True)
+    queue, _ = user_socket_queues.get(user_id, (None, None))
+    if queue:
+        queue.put(('done', {user_id: {'fittingID': fitting_id, 'epochs': epochs_trained, 'accuracy': accuracy}}))
 
 
 def notify_training_error(user_id):
     """
-    Sends an "error" message to every connected socket and clears the scheduler
-    The sockets then filter these messages to check if it applies to them.
+    Queues an "error" message to be sent to the user
     :param user_id: ID of the user the started message is intended to be received by
     :return: None
     """
-    scheduler.empty()
-    sio.emit('error', {user_id: True})
+    queue, _ = user_socket_queues.get(user_id, (None, None))
+    if queue:
+        while not queue.empty():
+            queue.get()
+        queue.put(('error', {user_id: True}))
 
 
 def run(debug=True):
@@ -599,10 +638,11 @@ def run(debug=True):
                                    'readoutSize': 1,
                                    'depth': 2}, '2')
         print(test_user)
-    try:
-        sio.run(app, allow_unsafe_werkzeug=True, host="0.0.0.0")  # add parameters here to change ip address
-    except TypeError:
-        sio.run(app, host="0.0.0.0")  # run without allow_unsafe_werkzeug for production
+
+    if bool(__debug__):
+        sio.run(app, host="0.0.0.0", allow_unsafe_werkzeug=True, port=5000)
+    else:
+        sio.run(app, host="0.0.0.0", port=5000)  # add parameters here to change ip address
 
 
 if __name__ == '__main__':

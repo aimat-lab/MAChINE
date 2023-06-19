@@ -236,9 +236,11 @@ export default {
    * @returns {Promise<AxiosResponse<any>>} Promise that returns the userID (response data) without exception handling
    */
   async login(username) {
-    return api.post(`/users`, { username }).then((response) => {
-      return response.data
-    })
+    return api
+      .post(`/users`, { username, socketID: socket.io.engine.id })
+      .then((response) => {
+        return response.data
+      })
   },
 
   /**
@@ -250,6 +252,7 @@ export default {
     return this.login(username)
       .then((r) => {
         userID = r.userID
+        socket.emit('login', userID)
         return true
       })
       .catch((e) => {
