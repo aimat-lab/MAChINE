@@ -1,5 +1,7 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
+# tensorflow-addons has been deprecated, but this is the only way to get R2
+# until https://www.tensorflow.org/api_docs/python/tf/keras/metrics/R2Score is in stable
 from backend.machine_learning.ml_gnns import create_schnet_with_dataset, smiles_to_schnet_input
 from backend.machine_learning.ml_fnns import create_fnn_with_dataset, smiles_to_fnn_input
 
