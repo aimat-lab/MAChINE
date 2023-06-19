@@ -503,7 +503,7 @@ def run_socket_queue(user_id: str):
     :return: None
     """
     while True:
-        sio.sleep(1)
+        sio.sleep(0.3)
 
         queue = user_socket_queues.get(user_id, (None, None))[0]
         # If the queue is empty, stop execution, means the user disconnected
