@@ -14,9 +14,7 @@ RUN pip install -r requirements.txt
 COPY ./backend ./backend
 COPY ./run_backend.py ./
 
-WORKDIR ./backend
-
 EXPOSE 5000
 
 # Start the app using serve command
-CMD [ "python", "../run_backend.py", "-O" ]
+CMD [ "gunicorn", "-b", ":5000", "-w", "1", "--threads", "100", "backend.utils.api:app" ]
