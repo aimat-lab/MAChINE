@@ -2,11 +2,12 @@ import hashlib
 import json
 import time
 import base64
+from functools import wraps
 from threading import Thread
 
 from flask import Flask
 from flask_cors import CORS
-from flask_restful import reqparse, Api, Resource
+from flask_restful import reqparse, Api, Resource, abort
 from flask_socketio import SocketIO, join_room
 
 import queue as gq
@@ -46,7 +47,30 @@ parser.add_argument('baseModelID')
 parser.add_argument('parameters', type=dict)
 
 
-class Models(Resource):
+def authenticate(func):
+    """
+    Decorator for authenticating user.
+    Aborts request if user is not authenticated
+    :param func: request function with user_id as argument
+    :return: decorated function
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        user_id = kwargs.get('user_id')
+        if user_id and (user_id in user_socket_queues) and (sh.get_user_handler(user_id) is not None):
+            return func(*args, **kwargs)
+
+        abort(401, message="User not authenticated")
+
+    return wrapper
+
+
+class AuthenticatedResource(Resource):
+    method_decorators = [authenticate]
+
+
+class Models(AuthenticatedResource):
     """
     GET a list of all models for given user ID
     PATCH to add new models to user data
@@ -104,7 +128,7 @@ class Models(Resource):
         return sh.add_model(user_id, args['name'], args['parameters'], args['baseModelID']), 201
 
 
-class Molecules(Resource):
+class Molecules(AuthenticatedResource):
     """
     GET a list of all molecules for given user ID
     PATCH to add new molecules to user data
@@ -181,7 +205,7 @@ class Molecule(Resource):
         return None, 422
 
 
-class Fittings(Resource):
+class Fittings(AuthenticatedResource):
     """
     GET a list of all fittings for given user ID
     """
@@ -398,7 +422,7 @@ class BaseModels(Resource):
         return processed_models
 
 
-class Analyze(Resource):
+class Analyze(AuthenticatedResource):
     def post(self, user_id):
         """
         Analyze molecule in smiles-argument using fitting with ID from the fittingID-argument
@@ -410,7 +434,7 @@ class Analyze(Resource):
         return ml.analyze(user_id, args['fittingID'], args['smiles'])
 
 
-class Train(Resource):
+class Train(AuthenticatedResource):
     """
     POST the start of a new training
     PATCH the continuance of an existing training
