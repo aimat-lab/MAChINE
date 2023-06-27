@@ -285,9 +285,6 @@ class User(Resource):
         # Create the user_id
         user_id = str(hashlib.sha1((str(args['username']) + str(time.time())).encode('utf-8'),
                                    usedforsecurity=(not bool(__debug__))).hexdigest())
-        # This line means that if a user forgets to log out that username is blocked from there on
-        if sh.get_user_handler(user_id) and not bool(__debug__):
-            return None, 409
         handler = sh.add_user_handler(user_id, args['username'])
         if handler:
             # Add example molecules & models
