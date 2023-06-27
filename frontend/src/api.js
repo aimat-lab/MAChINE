@@ -14,6 +14,21 @@ let socket = io(`ws://${serverAddress}:${serverPort}`, { timeout: 60000 })
 
 let userID = ''
 
+// Add a response interceptor for "not logged in" states
+api.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  (error) => {
+    if (error.response.status === 401) {
+      // Navigate to start page
+      window.location.href = '/'
+      return undefined
+    }
+    return Promise.reject(error)
+  }
+)
+
 /**
  * Updates the base URL for axios & address for socketio.
  * Creates a new socket with the new address and transfers all callbacks.

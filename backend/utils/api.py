@@ -30,6 +30,13 @@ key: user_id,
 value: Tuple(job queue, thread that runs queue)
 """
 
+last_user_activity_tracker: dict[str, float] = dict()
+"""
+Dict for tracking last time user was active
+key: user_id,
+value: timestamp
+"""
+
 # declaration of request arguments
 parser = reqparse.RequestParser()
 parser.add_argument('username')
@@ -58,7 +65,9 @@ def authenticate(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         user_id = kwargs.get('user_id')
-        if user_id and (user_id in user_socket_queues) and (sh.get_user_handler(user_id) is not None):
+        if user_id and (user_id in user_socket_queues) \
+                and (user_id in last_user_activity_tracker) and (sh.get_user_handler(user_id) is not None):
+            last_user_activity_tracker[user_id] = time.time()
             return func(*args, **kwargs)
 
         abort(401, message="User not authenticated")
@@ -287,6 +296,7 @@ class User(Resource):
                                    usedforsecurity=(not bool(__debug__))).hexdigest())
         handler = sh.add_user_handler(user_id, args['username'])
         if handler:
+            last_user_activity_tracker[user_id] = time.time()
             # Add example molecules & models
             # Hardcoded basemodel & dataset ID, change if breaks
             sh.add_molecule(user_id,
@@ -335,9 +345,11 @@ class User(Resource):
             # Remove association between user and socket
 
             assert (user_id in user_socket_queues)
+            assert (user_id in last_user_activity_tracker)
             # Remove entry from user_socket_queues, this is signal for the thread to stop
             _, task = user_socket_queues.pop(user_id)
             task.join()
+            last_user_activity_tracker.pop(user_id)
             return (None, 200) if sh.get_user_handler(user_id) is None else (None, 500)
         return None, 404
 
@@ -519,7 +531,8 @@ def on_join(user_id):
 # Queue running
 def run_socket_queue(user_id: str):
     """
-    Emits one socket event from the queue
+    Emits one socket event from the queue every 0.3 seconds
+    If user has been inactive for 2 hours, they are disconnected and their data deleted
     :param user_id: user_id of the user the event is intended to be received by
     :return: None
     """
@@ -527,6 +540,15 @@ def run_socket_queue(user_id: str):
         sio.sleep(0.3)
 
         queue = user_socket_queues.get(user_id, (None, None))[0]
+
+        if (time.time() - last_user_activity_tracker.get(user_id, 0)) > 7200:
+            print(f"Disconnected: {user_id} for prolonged inactivity.")
+            del user_socket_queues[user_id]
+            sh.delete_user_handler(user_id)
+            ml.stop_training(user_id)
+            sio.emit('disconnected', namespace='/', to=user_id)
+            return
+
         # If the queue is empty, stop execution, means the user disconnected
         if not queue:
             return
