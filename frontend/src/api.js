@@ -20,7 +20,7 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
-    if (error.response.status === 401) {
+    if (error?.response?.status === 401) {
       // Navigate to start page
       alert('You have been logged out due to inactivity.')
       window.location.href = '/'
@@ -140,9 +140,15 @@ export default {
    * @returns {Promise<AxiosResponse<any>>} Promise that returns the model list without exception handling
    */
   async getModelList() {
-    return api.get(`/users/${userID}/models`).then((response) => {
-      return response.data
-    })
+    return api
+      .get(`/users/${userID}/models`)
+      .then((response) => {
+        return response.data
+      })
+      .catch((e) => {
+        console.log(e)
+        return []
+      })
   },
 
   /**
