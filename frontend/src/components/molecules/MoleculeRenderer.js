@@ -2,13 +2,13 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Box } from '@mui/material'
 import { Kekule } from 'kekule'
+import 'kekule/theme/default'
 import * as THREE from 'three'
 
 Kekule.externalResourceManager.register('three.js', THREE)
 // the chemviewer is the actual 3D renderer
-const chemViewer = new Kekule.ChemWidget.Viewer(document)
+const chemViewer = new Kekule.ChemWidget.Viewer3D(document)
 chemViewer.setDrawDimension('100%', '100%')
-chemViewer.setRenderType(Kekule.Render.RendererType.R3D)
 chemViewer.setEnableToolbar(true)
 // only allow these tools
 chemViewer.setToolButtons([
@@ -20,6 +20,11 @@ chemViewer.setToolButtons([
   'rotateX',
   'rotateY',
   'rotateZ',
+])
+chemViewer.setAllowedMolDisplayTypes([
+  Kekule.Render.Molecule3DDisplayType.BALL_STICK,
+  Kekule.Render.Molecule3DDisplayType.STICKS,
+  Kekule.Render.Molecule3DDisplayType.SPACE_FILL,
 ])
 
 /**

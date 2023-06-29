@@ -2,6 +2,7 @@ import React from 'react'
 import { Box } from '@mui/material'
 import PropTypes from 'prop-types'
 import { Kekule } from 'kekule'
+import 'kekule/theme/default'
 
 const C = Kekule.Editor.ObjModifier.Category
 // the composer is the actual editor, gets rendered on a root element later
