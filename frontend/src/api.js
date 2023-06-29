@@ -22,6 +22,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response.status === 401) {
       // Navigate to start page
+      alert('You have been logged out due to inactivity.')
       window.location.href = '/'
       return undefined
     }
