@@ -237,14 +237,13 @@ function MoleculeView({ selectedMolecule, onSave }) {
   async function updateViewerDoc() {
     if (moleculeDoc && moleculeDoc.getChildCount() > 0) {
       const smiles = Kekule.IO.saveFormatData(moleculeDoc.getChildAt(0), 'smi')
-      return api
-        .get3DMolecule(smiles)
-        .then((converted) => {
-          if (converted) {
-            setViewerDoc(Kekule.IO.loadFormatData(converted, 'cml'))
-          }
-        })
-        .catch(() => setViewerDoc(moleculeDoc))
+      return api.get3DMolecule(smiles).then((converted) => {
+        if (converted) {
+          setViewerDoc(Kekule.IO.loadFormatData(converted, 'cml'))
+        } else {
+          setViewerDoc(moleculeDoc)
+        }
+      })
     } else {
       setViewerDoc(new Kekule.ChemDocument())
     }
