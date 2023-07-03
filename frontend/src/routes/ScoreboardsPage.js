@@ -158,30 +158,31 @@ export default function ScoreboardsPage() {
   }
 
   return (
-    <div align="center">
-      <Box
-        sx={{
-          mx: 4,
-          mb: 4,
-          mt: 1,
-          '& .table-theme': {
-            fontWeight: 'bold',
-          },
-        }}
-      >
-        <Typography sx={{ m: 4 }} variant="h4">
-          Best Models
-        </Typography>
-        {adminMode ? <AdminPanel refreshFunc={refresh} /> : null}
-        <Card sx={{ maxWidth: '90vw', m: 4 }}>
-          <DataTable
-            columns={fittingColumns}
-            rows={fittingRows}
-            highlightedRows={highlightedRows}
-          />
-        </Card>
-      </Box>
-    </div>
+    <Box
+      sx={{
+        flexDirection: 'column',
+        alignItems: 'center',
+        display: 'flex',
+        mx: 4,
+        mb: 4,
+        mt: 1,
+        '& .table-theme': {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <Typography sx={{ m: 4 }} variant="h4">
+        Best Models
+      </Typography>
+      {adminMode ? <AdminPanel refreshFunc={refresh} /> : null}
+      <Card sx={{ maxWidth: '90vw', m: 4 }}>
+        <DataTable
+          columns={fittingColumns}
+          rows={fittingRows}
+          highlightedRows={highlightedRows}
+        />
+      </Card>
+    </Box>
   )
 }
 
@@ -227,11 +228,12 @@ AdminPanel.propTypes = {
 function DataTable({ columns, rows, highlightedRows }) {
   return (
     <DataGrid
-      sx={{ height: '72vh', width: '100%' }}
+      sx={{ height: '72vh', width: '90vw' }}
       rows={rows}
       columns={columns}
       disableColumnMenu={true}
       hideFooter={true}
+      useResizeContainer={true}
       // pageSize={10} // Uncomment to limit visible entries
       // check for each fitting if it's been created by the current user
       getRowClassName={(params) => {
@@ -247,9 +249,14 @@ function DataTable({ columns, rows, highlightedRows }) {
         },
       }}
       // what is shown when there are no fittings
-      components={{
-        NoRowsOverlay: () => (
-          <Stack height="100%" alignItems="center" justifyContent="center">
+      slots={{
+        noRowsOverlay: () => (
+          <Stack
+            height="100%"
+            width="100%"
+            alignItems="center"
+            justifyContent="center"
+          >
             No trained models yet.
             <br />
             Be the first!
