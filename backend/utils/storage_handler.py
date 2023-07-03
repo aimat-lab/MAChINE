@@ -318,6 +318,14 @@ class StorageHandler:
     def get_scoreboard_summaries(self):
         return self.scoreboard_summaries
 
+    def get_filtered_scoreboard(self, dataset_id, labels):
+        filtered_fittings = dict()
+        for fitting_id, fitting_summary in self.scoreboard_summaries.items():
+            if fitting_summary.get('datasetID') == dataset_id and set(fitting_summary.get('labels')) == set(labels):
+                filtered_fittings[fitting_id] = fitting_summary
+        print(filtered_fittings)
+        return filtered_fittings
+
     def delete_scoreboard_fitting(self, fitting_id):
         self.scoreboard_summaries.pop(fitting_id, None)
         self.__save_scoreboard_summaries()
@@ -402,6 +410,7 @@ get_fitting = _inst.get_fitting
 get_fitting_summary = _inst.get_fitting_summary
 get_fitting_summaries = _inst.get_fitting_summaries
 get_scoreboard_summaries = _inst.get_scoreboard_summaries
+get_filtered_scoreboard = _inst.get_filtered_scoreboard
 get_model_summary = _inst.get_model_summary
 get_model_summaries = _inst.get_model_summaries
 get_molecules = _inst.get_molecules

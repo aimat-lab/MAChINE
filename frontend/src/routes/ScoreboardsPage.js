@@ -149,7 +149,7 @@ export default function ScoreboardsPage() {
    * all fitting of the current use to be able to highlight them
    */
   function refresh() {
-    api.getScoreboardSummaries().then((data) => {
+    api.getScoreboardSummaries('3', ['Solubility']).then((data) => {
       setFittingRows(data)
     })
     api.getFittings().then((data) => {

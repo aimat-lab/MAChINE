@@ -109,15 +109,10 @@ export default {
    * Requests scoreboard data from backend
    * @returns {Promise<AxiosResponse<*[]> | *[]>} Promise that returns the scoreboard list (response data) without exception handling
    */
-  async getScoreboardSummaries() {
-    return api
-      .get('/scoreboard')
-      .then((response) => {
-        return response.data
-      })
-      .catch(() => {
-        return []
-      })
+  async getScoreboardSummaries(datasetId, labels) {
+    return api.get(`/scoreboard/${datasetId}/${labels}`).then((response) => {
+      return response.data
+    })
   },
 
   /**

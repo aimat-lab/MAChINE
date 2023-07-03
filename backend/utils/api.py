@@ -256,13 +256,13 @@ class Scoreboard(Resource):
     GET current contents of the scoreboard
     DELETE fitting with given ID from scoreboard. If no ID is given, delete all fittings from scoreboard
     """
-
-    def get(self):
+    def get(self, dataset_id, labels):
         """
-        GET current contents of the scoreboard
+        GET current contents of the scoreboard with matching dataset and label(s)
         :return:
         """
-        return list(sh.get_scoreboard_summaries().values())
+        separated_labels = labels.split(',')
+        return list(sh.get_filtered_scoreboard(dataset_id, separated_labels).values())
 
     def delete(self, fitting_id=None):
         """
@@ -512,7 +512,7 @@ api.add_resource(Fittings, '/users/<user_id>/fittings')
 api.add_resource(Analyze, '/users/<user_id>/analyze')
 api.add_resource(Train, '/users/<user_id>/train')
 # Non-user-specific resources
-api.add_resource(Scoreboard, '/scoreboard/<fitting_id>', '/scoreboard')
+api.add_resource(Scoreboard, '/scoreboard/<fitting_id>', '/scoreboard', '/scoreboard/<dataset_id>/<labels>')
 api.add_resource(Datasets, '/datasets')
 api.add_resource(Histograms, '/histograms/<dataset_id>/<labels>')
 api.add_resource(BaseModels, '/baseModels')
