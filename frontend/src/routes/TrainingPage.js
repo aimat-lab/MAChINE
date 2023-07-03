@@ -285,7 +285,7 @@ export default function TrainingPage() {
         open={openSnackError}
         onClose={() => setOpenSnackError(false)}
         severity="error"
-        message="Someone is already training right now. Please try again later."
+        message="There was an issue with your training. Please try again."
       />
       <HelpPopper
         id="helpPopper"
