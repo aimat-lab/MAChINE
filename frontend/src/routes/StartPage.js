@@ -84,7 +84,7 @@ export default function StartPage({ onLogin }) {
                 align="center"
                 color={theme.palette.primary.main}
               >
-                {`-It's neat-`}
+                {`- Beta -`}
               </Typography>
               <Typography
                 variant="h5"
