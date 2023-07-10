@@ -66,7 +66,7 @@ def test_analyze(user_id, smiles, fitting_id, model_id, base_model_id, labels, p
 class TestWithLiveTrainingsGroup:
     def test_is_training_running(self, uid, content):
         ml.live_trainings = content
-        assert ml.is_training_running(uid) == bool(content), 'Expected training to be running when content not empty'
+        assert ml.is_training_running(uid) == (uid in content and (content[uid] is not None)), 'Expected training to be running when content contains uid and value is not None'
 
     def test_stop_training(self, uid, content, mocker):
         ml.live_trainings = dict(content)

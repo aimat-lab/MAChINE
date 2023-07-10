@@ -6,9 +6,9 @@ import { camelToNaturalString } from '../utils'
 /**
  * Provides information about the currently running training.
  * @property {boolean} trainingStatus True while training is running.
- * @property {function} setTrainingStatus Sets the training status.
  * @property {boolean} trainingStopped True when training was stopped manually.
  * @property {boolean} trainingFinished True when training is over (including on manual stop).
+ * @property {boolean} trainingFailed True when training ended via error.
  * @property {string} trainingID Set after first training is finished. On training start set to '0'.
  * @property {ModelConfig} selectedModel Selected Model for the training process.
  * @property {function} setSelectedModel Sets the selected model.
@@ -32,6 +32,7 @@ const TrainingContext = React.createContext({
   trainingStatus: true,
   trainingStopped: false,
   trainingFinished: false,
+  trainingFailed: false,
   setTrainingFinished: () => {},
   trainingID: '0',
   selectedModel: null,
@@ -62,6 +63,7 @@ export const TrainingProvider = ({ children }) => {
   const [trainingStatus, setTrainingStatus] = React.useState(true)
   const [trainingStopped, setTrainingStopped] = React.useState(false)
   const [trainingFinished, setTrainingFinished] = React.useState(false)
+  const [trainingFailed, setTrainingFailed] = React.useState(false)
   const [trainingID, setTrainingID] = React.useState('0')
   const [selectedModel, setSelectedModel] = React.useState(undefined)
   const [selectedDataset, setSelectedDataset] = React.useState(undefined)
@@ -95,6 +97,11 @@ export const TrainingProvider = ({ children }) => {
       setTrainingID(response.fittingID)
       setSelectedEpochs(response.epochs)
       setFinishedAccuracy(response.accuracy)
+    })
+    api.registerSocketListener('error', () => {
+      setTrainingStopped(true)
+      setTrainingStatus(false)
+      setTrainingFailed(true)
     })
   }, [])
 
@@ -145,6 +152,7 @@ export const TrainingProvider = ({ children }) => {
     setTrainingStatus(false)
     setTrainingStopped(false)
     setTrainingFinished(false)
+    setTrainingFailed(false)
     setTrainingID('0')
     dispatchTrainingData({ type: 'reset' })
   }
@@ -169,6 +177,7 @@ export const TrainingProvider = ({ children }) => {
         trainingStatus,
         trainingStopped,
         trainingFinished,
+        trainingFailed,
         setTrainingFinished,
         trainingID,
         selectedModel,

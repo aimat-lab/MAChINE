@@ -151,7 +151,7 @@ export default function Navbar({
         {helpModeButton}
         {darkModeButton}
       </Toolbar>
-      <style jsx="true">{`
+      <style>{`
         a {
           color: white;
           text-decoration: none;

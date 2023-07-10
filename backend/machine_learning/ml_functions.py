@@ -1,3 +1,5 @@
+import threading
+
 import keras.callbacks
 
 import backend.utils.api as api
@@ -6,6 +8,7 @@ from backend.utils import storage_handler as sh
 
 # Dictionary containing all current active training sessions
 live_trainings = dict()
+lock = threading.RLock()
 
 
 class Training:
@@ -87,18 +90,23 @@ class Training:
 
 
 def train(user_id, dataset_id, model_id, labels, epochs, batch_size, fitting_id=None):
-    if is_training_running(user_id):  # Change this to allow for more than one training at the same time
-        return False
-    # Placeholder here to ensure no other training can be started while we're initializing, as this takes a while
-    live_trainings[user_id] = {'Placeholder'}
+    with lock:
+        if is_training_running(user_id):  # Change this to allow for more than one training at the same time
+            return False
+        # Placeholder here to ensure no other training can be started while we're initializing, as this takes a while
+        live_trainings[user_id] = {'Placeholder'}
     try:
         new_training = Training(user_id, dataset_id, model_id, labels, epochs, batch_size, fitting_id)
-    except (TypeError, AttributeError):
-        del live_trainings[user_id]
+        with lock:
+            live_trainings[user_id] = new_training
+        new_training.start_training()
+
+    except (TypeError, AttributeError, ValueError):
+        with lock:
+            del live_trainings[user_id]
+        api.notify_training_error(user_id)
         return False
 
-    live_trainings[user_id] = new_training
-    new_training.start_training()
     return True
 
 
@@ -111,7 +119,8 @@ def continue_training(user_id, fitting_id, epochs):
 
 
 def stop_training(user_id):
-    training = live_trainings.get(user_id, None)
+    with lock:
+        training = live_trainings.get(user_id, None)
     if training:
         return training.stop_training()
     return False
@@ -119,7 +128,8 @@ def stop_training(user_id):
 
 def is_training_running(user_id):
     # Change this & live_trainings dict to allow for more than one training at the same time
-    return bool(live_trainings)
+    with lock:
+        return user_id in live_trainings and (live_trainings[user_id] is not None)
 
 
 def analyze(user_id, fitting_id, smiles):
@@ -172,11 +182,13 @@ class LiveStats(keras.callbacks.Callback):
 
     def on_train_begin(self, logs=None):
         # Sends the api how many epochs the model is going to have been trained for
-        epochs = live_trainings.get(self.user_id).epochs
+        with lock:
+            epochs = live_trainings.get(self.user_id).epochs
         api.notify_training_start(self.user_id, epochs)
 
     def on_train_end(self, logs=None):
-        finished_training = live_trainings.pop(self.user_id, None)
+        with lock:
+            finished_training = live_trainings.pop(self.user_id, None)
         if finished_training:
             accuracy = finished_training.evaluate_model()
             fitting_id = finished_training.fitting_id

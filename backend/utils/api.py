@@ -1,13 +1,16 @@
 import hashlib
 import json
-import sched
 import time
 import base64
+from functools import wraps
+from threading import Thread
 
 from flask import Flask
 from flask_cors import CORS
-from flask_restful import reqparse, Api, Resource
-from flask_socketio import SocketIO
+from flask_restful import reqparse, Api, Resource, abort
+from flask_socketio import SocketIO, join_room
+
+import queue as gq
 
 from backend.machine_learning import ml_functions as ml
 from backend.utils import molecule_formats as mf
@@ -16,13 +19,25 @@ from backend.utils import storage_handler as sh
 app = Flask(__name__)
 cors = CORS(app)
 api = Api(app)
-sio = SocketIO(app, cors_allowed_origins='*', async_mode="threading", logger=bool(__debug__), engineio_logger=bool(__debug__))
+sio = SocketIO(app, cors_allowed_origins='*', async_mode="threading", logger=bool(__debug__),
+               engineio_logger=bool(__debug__))
 
-scheduler = sched.scheduler(time.time, sio.sleep)
+user_socket_queues: dict[str, tuple[gq.Queue, Thread | None]] = dict()
+"""
+Queues for user socket updates
 
+key: user_id, 
+value: Tuple(job queue, thread that runs queue)
 """
-declaration of request arguments
+
+last_user_activity_tracker: dict[str, float] = dict()
 """
+Dict for tracking last time user was active
+key: user_id,
+value: timestamp
+"""
+
+# declaration of request arguments
 parser = reqparse.RequestParser()
 parser.add_argument('username')
 parser.add_argument('smiles')
@@ -39,11 +54,37 @@ parser.add_argument('baseModelID')
 parser.add_argument('parameters', type=dict)
 
 
-class Models(Resource):
+def authenticate(func):
+    """
+    Decorator for authenticating user.
+    Aborts request if user is not authenticated
+    :param func: request function with user_id as argument
+    :return: decorated function
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        user_id = kwargs.get('user_id')
+        if user_id and (user_id in user_socket_queues) \
+                and (user_id in last_user_activity_tracker) and (sh.get_user_handler(user_id) is not None):
+            last_user_activity_tracker[user_id] = time.time()
+            return func(*args, **kwargs)
+
+        abort(401, message="User not authenticated")
+
+    return wrapper
+
+
+class AuthenticatedResource(Resource):
+    method_decorators = [authenticate]
+
+
+class Models(AuthenticatedResource):
     """
     GET a list of all models for given user ID
     PATCH to add new models to user data
     """
+
     def get(self, user_id):
         """
         Get a list of all models in data of user with given ID
@@ -96,11 +137,12 @@ class Models(Resource):
         return sh.add_model(user_id, args['name'], args['parameters'], args['baseModelID']), 201
 
 
-class Molecules(Resource):
+class Molecules(AuthenticatedResource):
     """
     GET a list of all molecules for given user ID
     PATCH to add new molecules to user data
     """
+
     def get(self, user_id):
         """
         Gets all molecules in storage of user with given user ID and converts them to frontend compatible format
@@ -157,6 +199,7 @@ class Molecule(Resource):
     """
     GET a cml document for a given base64-encoded smiles code
     """
+
     def get(self, b64_smiles) -> tuple[(str | None), int]:
         """
         GET a CML string containing a 3D conversion of a base64 encoded smiles code
@@ -171,10 +214,11 @@ class Molecule(Resource):
         return None, 422
 
 
-class Fittings(Resource):
+class Fittings(AuthenticatedResource):
     """
     GET a list of all fittings for given user ID
     """
+
     def get(self, user_id):
         """
         Gets fittings from user with given user ID and converts each to frontend-compatible format
@@ -212,6 +256,7 @@ class Scoreboard(Resource):
     GET current contents of the scoreboard
     DELETE fitting with given ID from scoreboard. If no ID is given, delete all fittings from scoreboard
     """
+
     def get(self):
         """
         GET current contents of the scoreboard
@@ -238,20 +283,20 @@ class User(Resource):
     POST a new user
     DELETE a user with given id
     """
+
     def post(self):
         """
-        Add a new user
+        Initializes a new user
         Generate an ID, add new user storage containing example model and molecule
         :return: string containing new user's ID
         """
         args = parser.parse_args()
         # Create the user_id
-        user_id = str(hashlib.sha1(args['username'].encode('utf-8'), usedforsecurity=False).hexdigest())
-        # This line means that if a user forgets to log out that username is blocked from there on
-        if sh.get_user_handler(user_id) and not bool(__debug__):
-            return None, 409
+        user_id = str(hashlib.sha1((str(args['username']) + str(time.time())).encode('utf-8'),
+                                   usedforsecurity=(not bool(__debug__))).hexdigest())
         handler = sh.add_user_handler(user_id, args['username'])
         if handler:
+            last_user_activity_tracker[user_id] = time.time()
             # Add example molecules & models
             # Hardcoded basemodel & dataset ID, change if breaks
             sh.add_molecule(user_id,
@@ -284,18 +329,27 @@ class User(Resource):
                                                 }],
                                                 'lossFunction': 'Huber Loss',
                                                 'optimizer': 'Stochastic Gradient Descent'}, '1')
-        
+
             return {'userID': user_id}, 201
         return None, 404
 
     def delete(self, user_id):
         """
         Delete storage of user with given ID
+        Unassociate client socket with ID
         :param user_id: String containing ID of user to be deleted
         :return: int, status code depending on failure or success of deletion
         """
         if sh.get_user_handler(user_id):
             sh.delete_user_handler(user_id)
+            # Remove association between user and socket
+
+            assert (user_id in user_socket_queues)
+            assert (user_id in last_user_activity_tracker)
+            # Remove entry from user_socket_queues, this is signal for the thread to stop
+            _, task = user_socket_queues.pop(user_id)
+            task.join()
+            last_user_activity_tracker.pop(user_id)
             return (None, 200) if sh.get_user_handler(user_id) is None else (None, 500)
         return None, 404
 
@@ -304,6 +358,7 @@ class Datasets(Resource):
     """
     GET a list of descriptions of available datasets
     """
+
     def get(self):
         """
         Converts the stored Dataset summaries to the frontend format
@@ -343,6 +398,7 @@ class BaseModels(Resource):
     """
     GET a list of available base models
     """
+
     def get(self):
         """
         Converts the stored base model to the frontend format
@@ -375,7 +431,7 @@ class BaseModels(Resource):
         return processed_models
 
 
-class Analyze(Resource):
+class Analyze(AuthenticatedResource):
     def post(self, user_id):
         """
         Analyze molecule in smiles-argument using fitting with ID from the fittingID-argument
@@ -387,12 +443,13 @@ class Analyze(Resource):
         return ml.analyze(user_id, args['fittingID'], args['smiles'])
 
 
-class Train(Resource):
+class Train(AuthenticatedResource):
     """
     POST the start of a new training
     PATCH the continuance of an existing training
     DELETE the current training
     """
+
     def post(self, user_id):
         """
         Initiates a new training from given arguments
@@ -462,29 +519,99 @@ api.add_resource(BaseModels, '/baseModels')
 api.add_resource(Molecule, '/molecule/<b64_smiles>')
 
 
+@sio.on('login')
+def on_join(user_id):
+    join_room(user_id)
+    qu = gq.Queue()
+    user_socket_queues[user_id] = (qu, None)
+    task = sio.start_background_task(target=run_socket_queue, user_id=user_id)
+    user_socket_queues[user_id] = (qu, task)
+
+
+# Queue running
+def run_socket_queue(user_id: str):
+    """
+    Emits one socket event from the queue every 0.3 seconds
+    If user has been inactive for 2 hours, they are disconnected and their data deleted
+    :param user_id: user_id of the user the event is intended to be received by
+    :return: None
+    """
+    while True:
+        sio.sleep(0.3)
+
+        queue = user_socket_queues.get(user_id, (None, None))[0]
+
+        # Remove user if they have been inactive for 2 hours
+        if (time.time() - last_user_activity_tracker.get(user_id, 0)) > 2 * 60 * 60:
+            print(f"Disconnected: {user_id} for prolonged inactivity.")
+            del user_socket_queues[user_id]
+            del last_user_activity_tracker[user_id]
+            sh.delete_user_handler(user_id)
+            ml.stop_training(user_id)
+            sio.emit('disconnected', namespace='/', to=user_id)
+            return
+
+        # If the queue is empty, stop execution, means the user disconnected
+        if not queue:
+            return
+
+        # If the queue is not empty, emit the next event
+        if not queue.empty():
+            sio.emit(*queue.get(), namespace='/', to=user_id)
+
+
 # SocketIO event listeners/senders
+def notify_training_start(user_id, epochs):
+    """
+    Sends a "started" message to every connected socket and clears the socket queue
+    :param user_id: ID of the user the started message is intended to be received by
+    :param epochs: Number of epochs the training started at
+    :return: None
+    """
+    queue, _ = user_socket_queues.get(user_id, (None, None))
+    if queue:
+        while not queue.empty():
+            queue.get()
+        queue.put(('started', {user_id: epochs}))
+
+
 def update_training_logs(user_id, logs):
-    # Schedules updates 0.3 secs apart at least
-    scheduler.enter(0.3 * (len(scheduler.queue) + 1),
-                    2,
-                    sio.emit,
-                    ('update', {user_id: logs}))
-    # blocking is required to schedule messages correctly, but can't block main process
-    # Starts the scheduler as a blocking background task
-    sio.start_background_task(scheduler.run, blocking=True)
+    """
+    Queues an update message to be sent to the user
+    :param user_id: ID of the user the "update" message is intended to be received by
+    :param logs: Log dictionary containing training data
+    :return: None
+    """
+    queue, _ = user_socket_queues.get(user_id, (None, None))
+    if queue:
+        queue.put(('update', {user_id: logs}))
 
 
 def notify_training_done(user_id, fitting_id, epochs_trained, accuracy):
-    scheduler.enter(0.3 * (len(scheduler.queue) + 1),
-                    2,
-                    sio.emit,
-                    ('done', {user_id: {'fittingID': fitting_id, 'epochs': epochs_trained, 'accuracy': accuracy}}))
-    sio.start_background_task(scheduler.run, blocking=True)
+    """
+    Queues a "done" message to be sent to the user
+    :param user_id: ID of the user the "done" message is intended to be received by
+    :param fitting_id: Unique ID of the fitting created by the training
+    :param epochs_trained: Total epochs the model was trained for in this training
+    :param accuracy: Accuracy of the model
+    :return: None
+    """
+    queue, _ = user_socket_queues.get(user_id, (None, None))
+    if queue:
+        queue.put(('done', {user_id: {'fittingID': fitting_id, 'epochs': epochs_trained, 'accuracy': accuracy}}))
 
 
-def notify_training_start(user_id, epochs):
-    scheduler.empty()
-    sio.emit('started', {user_id: epochs})
+def notify_training_error(user_id):
+    """
+    Queues an "error" message to be sent to the user
+    :param user_id: ID of the user the started message is intended to be received by
+    :return: None
+    """
+    queue, _ = user_socket_queues.get(user_id, (None, None))
+    if queue:
+        while not queue.empty():
+            queue.get()
+        queue.put(('error', {user_id: True}))
 
 
 def run(debug=True):
@@ -556,10 +683,11 @@ def run(debug=True):
                                    'readoutSize': 1,
                                    'depth': 2}, '2')
         print(test_user)
-    try:
-        sio.run(app, allow_unsafe_werkzeug=True)  # add parameters here to change ip address
-    except TypeError:
-        sio.run(app) # run without allow_unsafe_werkzeug for production
+
+    if bool(__debug__):
+        sio.run(app, host="0.0.0.0", allow_unsafe_werkzeug=True, port=5000)
+    else:
+        sio.run(app, host="0.0.0.0", port=5000)  # add parameters here to change ip address
 
 
 if __name__ == '__main__':

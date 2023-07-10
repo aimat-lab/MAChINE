@@ -37,6 +37,8 @@ export default function TrainingPage() {
   const [loadTraining, setLoadTraining] = React.useState(false)
   const [openSnackError, setOpenSnackError] = React.useState(false)
   const [showFinishDialog, setShowFinishDialog] = React.useState(false)
+  const [showTrainingErrorDialog, setShowTrainingErrorDialog] =
+    React.useState(false)
   const theme = useTheme()
   const navigate = useNavigate()
 
@@ -49,6 +51,12 @@ export default function TrainingPage() {
       setStartStopButton('Start')
     }
   }, [training.trainingStatus])
+
+  React.useEffect(() => {
+    if (training.trainingFailed) {
+      setShowTrainingErrorDialog(true)
+    }
+  }, [training.trainingFailed])
 
   const handleStartStop = () => {
     if (training.trainingStatus) {
@@ -123,6 +131,10 @@ export default function TrainingPage() {
 
   const handleHelpPopperClose = () => {
     setHelpAnchorEl(null)
+  }
+
+  function handleCloseTrainingErrorDialog() {
+    setShowTrainingErrorDialog(false)
   }
 
   return (
@@ -220,6 +232,32 @@ export default function TrainingPage() {
           </Grid>
         </Grid>
       </Grid>
+      <Dialog
+        open={showTrainingErrorDialog}
+        onClose={handleCloseTrainingErrorDialog}
+      >
+        <DialogTitle>{'Error during training!'}</DialogTitle>
+        <Typography
+          display="flex"
+          sx={{
+            justifyContent: 'center',
+            color: theme.palette.text.secondary,
+            p: 2,
+          }}
+        >
+          {"Don't worry, your previous training data hasn't been lost."}
+        </Typography>
+        <DialogActions>
+          <Button onClick={handleCloseTrainingErrorDialog}>Close</Button>
+          <Button
+            onClick={() => {
+              navigate('/models')
+            }}
+          >
+            Continue to models
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog open={showFinishDialog} onClose={handleCloseFinishDialog}>
         <DialogTitle>{'Your training finished!'}</DialogTitle>
         <Typography
@@ -247,7 +285,7 @@ export default function TrainingPage() {
         open={openSnackError}
         onClose={() => setOpenSnackError(false)}
         severity="error"
-        message="Someone is already training right now. Please try again later"
+        message="There was an issue with your training. Please try again."
       />
       <HelpPopper
         id="helpPopper"

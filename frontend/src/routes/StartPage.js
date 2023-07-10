@@ -1,6 +1,7 @@
 import React from 'react'
 import {
   Box,
+  Checkbox,
   Typography,
   Button,
   Container,
@@ -8,6 +9,7 @@ import {
   TextField,
   useTheme,
   CircularProgress,
+  FormControlLabel,
 } from '@mui/material'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
@@ -21,6 +23,7 @@ import { useNavigate } from 'react-router-dom'
  */
 export default function StartPage({ onLogin }) {
   const [enteredName, setEnteredName] = React.useState('')
+  const [scoreboardConsent, setScoreboardConsent] = React.useState(false)
   const [connecting, setConnecting] = React.useState(false)
   const [connectionFailed, setConnectionFailed] = React.useState(false)
   const theme = useTheme()
@@ -33,7 +36,7 @@ export default function StartPage({ onLogin }) {
   const submitName = () => {
     setConnecting(true)
     setConnectionFailed(false)
-    onLogin(enteredName).then((result) => {
+    onLogin(enteredName, scoreboardConsent).then((result) => {
       setConnecting(false)
       if (result) {
         navigate('/home')
@@ -81,7 +84,7 @@ export default function StartPage({ onLogin }) {
                 align="center"
                 color={theme.palette.primary.main}
               >
-                {`-It's neat-`}
+                {`- Beta -`}
               </Typography>
               <Typography
                 variant="h5"
@@ -121,6 +124,25 @@ export default function StartPage({ onLogin }) {
             >
               Start your journey!
             </Button>
+          </Stack>
+          {/* Consent Things */}
+          <Stack
+            direction="row"
+            spacing={4}
+            justifyContent="space-evenly"
+            sx={{ pt: 4 }}
+          >
+            {!(connecting || connectionFailed) ? (
+              <FormControlLabel
+                label="I want to share my user name and created models on the scoreboard."
+                control={
+                  <Checkbox
+                    checked={scoreboardConsent}
+                    onChange={() => setScoreboardConsent(!scoreboardConsent)}
+                  />
+                }
+              />
+            ) : null}
           </Stack>
           {/* Connecting... text */}
           <Stack

@@ -29,7 +29,7 @@ __all__ = ['add_analysis',
            'get_user_handler',
            'update_fitting']
 
-_storage_path = Path.cwd() / 'storage'
+_storage_path = Path(__file__.replace('storage_handler.py', '')) / '..' / 'storage'
 _user_data_path = _storage_path / 'user_data'
 _datasets_path = _storage_path / 'data'
 _base_models_path = _storage_path / 'models'
@@ -167,22 +167,24 @@ class UserDataStorageHandler:
     # Private Methods
     def __load_summary_file(self, filename):
         content = dict()
-        file_path = (self.user_path / filename)
-        if file_path.exists():
-            file = file_path.open('r')
-            try:
-                content = json.load(file)
-            except json.decoder.JSONDecodeError:
-                print('Error reading', file.name)
-                content = {}
-            file.close()
+        #
+        #file_path = (self.user_path / filename)
+        #if file_path.exists():
+        #    file = file_path.open('r')
+        #    try:
+        #        content = json.load(file)
+        #    except json.decoder.JSONDecodeError:
+        #        print('Error reading', file.name)
+        #        content = {}
+        #    file.close()
         return content
 
     def __save_summary_file(self, filename, content):
-        file_path = (self.user_path / filename)
-        file = file_path.open('w')
-        json.dump(content, file)
-        file.close()
+        #file_path = (self.user_path / filename)
+        #file = file_path.open('w')
+        #json.dump(content, file)
+        #file.close()
+        return
 
     def __build_folder_structure(self):
         self.user_path.mkdir(parents=True, exist_ok=True)
@@ -280,19 +282,20 @@ class StorageHandler:
         fitting_id = self.get_user_handler(user_id).add_fitting(dataset_id, labels, epochs, accuracy, batch_size,
                                                                 model_id,
                                                                 fitting)
-        # Creates the scoreboard fitting summary
-        self.scoreboard_summaries[fitting_id] = {'id': fitting_id,
-                                                 'userName': str(self.get_user_handler(user_id).username),
-                                                 'modelID': model_id,
-                                                 'modelName': self.get_user_handler(user_id).get_model_summary(
-                                                     model_id).get(
-                                                     'name'),
-                                                 'datasetID': dataset_id,
-                                                 'datasetName': self.get_dataset_summaries().get(dataset_id).get('name'),
-                                                 'labels': labels,
-                                                 'epochs': epochs,
-                                                 'batchSize': batch_size,
-                                                 'accuracy': accuracy}
+        # Creates the scoreboard fitting summary, if username isn't None
+        if self.get_user_handler(user_id).username is not None:
+            self.scoreboard_summaries[fitting_id] = {'id': fitting_id,
+                                                     'userName': str(self.get_user_handler(user_id).username),
+                                                     'modelID': model_id,
+                                                     'modelName': self.get_user_handler(user_id).get_model_summary(
+                                                         model_id).get(
+                                                         'name'),
+                                                     'datasetID': dataset_id,
+                                                     'datasetName': self.get_dataset_summaries().get(dataset_id).get('name'),
+                                                     'labels': labels,
+                                                     'epochs': epochs,
+                                                     'batchSize': batch_size,
+                                                     'accuracy': accuracy}
         self.__save_scoreboard_summaries()
         return fitting_id
 
