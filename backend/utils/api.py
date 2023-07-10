@@ -541,9 +541,11 @@ def run_socket_queue(user_id: str):
 
         queue = user_socket_queues.get(user_id, (None, None))[0]
 
-        if (time.time() - last_user_activity_tracker.get(user_id, 0)) > 7200:
+        # Remove user if they have been inactive for 2 hours
+        if (time.time() - last_user_activity_tracker.get(user_id, 0)) > 2 * 60 * 60:
             print(f"Disconnected: {user_id} for prolonged inactivity.")
             del user_socket_queues[user_id]
+            del last_user_activity_tracker[user_id]
             sh.delete_user_handler(user_id)
             ml.stop_training(user_id)
             sio.emit('disconnected', namespace='/', to=user_id)
