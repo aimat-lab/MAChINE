@@ -28,6 +28,7 @@ import { camelToNaturalString } from '../utils'
 export default function ScoreboardsPage() {
   const [selectedDataset, setSelectedDataset] = React.useState({ name: '' })
   const [selectedDatasetName, setSelectedDatasetName] = React.useState('')
+  const [selectedLabel, setSelectedLabel] = React.useState('')
   const [datasets, setDatasets] = React.useState([])
   const [fittingRows, setFittingRows] = React.useState([])
   const [highlightedRows, setHighlightedRows] = React.useState([])
@@ -47,6 +48,7 @@ export default function ScoreboardsPage() {
   const handleDatasetSelection = (newValue) => {
     const ds = datasets.find((dataset) => dataset.name === newValue)
     setSelectedDataset(ds)
+    setSelectedLabel(ds.labelDescriptors[0])
     setSelectedDatasetName(newValue)
   }
 
@@ -224,6 +226,29 @@ export default function ScoreboardsPage() {
               </MenuItem>
             )
           })}
+        </Select>
+      </FormControl>
+      <FormControl>
+        <InputLabel id="label-selector-label" sx={{ m: 2 }}>
+          Label
+        </InputLabel>
+        <Select
+          value={selectedLabel}
+          label="label-selector"
+          onChange={(e) => {
+            handleLabelSelection(e.target.value)
+          }}
+          sx={{ m: 2 }}
+        >
+          {'labelDescriptors' in selectedDataset
+            ? selectedDataset.labelDescriptors.map((label) => {
+                return (
+                  <MenuItem key={label} value={label}>
+                    {camelToNaturalString(label)}
+                  </MenuItem>
+                )
+              })
+            : null}
         </Select>
       </FormControl>
       <Card sx={{ maxWidth: '90vw', m: 4 }}>
