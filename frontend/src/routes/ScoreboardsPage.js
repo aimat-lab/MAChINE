@@ -1,5 +1,16 @@
 import React from 'react'
-import { Box, Button, Card, IconButton, Stack, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Card,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  Typography,
+} from '@mui/material'
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { DataGrid } from '@mui/x-data-grid'
@@ -15,10 +26,46 @@ import { camelToNaturalString } from '../utils'
  * @constructor
  */
 export default function ScoreboardsPage() {
+  const [selectedDataset, setSelectedDataset] = React.useState({ name: '' })
+  const [selectedDatasetName, setSelectedDatasetName] = React.useState('')
+  const [datasets, setDatasets] = React.useState([])
   const [fittingRows, setFittingRows] = React.useState([])
   const [highlightedRows, setHighlightedRows] = React.useState([])
   const { adminMode } = React.useContext(UserContext)
   const training = React.useContext(TrainingContext)
+
+  React.useEffect(() => {
+    api.getDatasets().then((datasetList) => {
+      setDatasets(datasetList)
+    })
+  }, [])
+
+  React.useEffect(() => {
+    refresh()
+  }, [training.trainingStatus])
+
+  const handleDatasetSelection = (newValue) => {
+    const ds = datasets.find((dataset) => dataset.name === newValue)
+    setSelectedDataset(ds)
+    setSelectedDatasetName(newValue)
+  }
+
+  const handleLabelSelection = (newValue) => {
+    setSelectedLabel(newValue)
+  }
+
+  /**
+   * gets the required info from the backend: all the fittings to be displayed in the Scoreboard and
+   * all fitting of the current use to be able to highlight them
+   */
+  function refresh() {
+    api.getScoreboardSummaries('3', ['Solubility']).then((data) => {
+      setFittingRows(data)
+    })
+    api.getFittings().then((data) => {
+      setHighlightedRows(data)
+    })
+  }
 
   // defining the order and context of the columns
   const fittingColumns = [
@@ -140,23 +187,6 @@ export default function ScoreboardsPage() {
     },
   ]
 
-  React.useEffect(() => {
-    refresh()
-  }, [training.trainingStatus])
-
-  /**
-   * gets the required info from the backend: all the fittings to be displayed in the Scoreboard and
-   * all fitting of the current use to be able to highlight them
-   */
-  function refresh() {
-    api.getScoreboardSummaries('3', ['Solubility']).then((data) => {
-      setFittingRows(data)
-    })
-    api.getFittings().then((data) => {
-      setHighlightedRows(data)
-    })
-  }
-
   return (
     <Box
       sx={{
@@ -175,6 +205,27 @@ export default function ScoreboardsPage() {
         Best Models
       </Typography>
       {adminMode ? <AdminPanel refreshFunc={refresh} /> : null}
+      <FormControl>
+        <InputLabel id="dataset-selector-label" sx={{ m: 2 }}>
+          Dataset
+        </InputLabel>
+        <Select
+          value={selectedDatasetName}
+          label="dataset-selector"
+          onChange={(e) => {
+            handleDatasetSelection(e.target.value)
+          }}
+          sx={{ m: 2 }}
+        >
+          {datasets.map((dataset) => {
+            return (
+              <MenuItem key={dataset.id} value={dataset.name}>
+                {dataset.name}
+              </MenuItem>
+            )
+          })}
+        </Select>
+      </FormControl>
       <Card sx={{ maxWidth: '90vw', m: 4 }}>
         <DataTable
           columns={fittingColumns}
