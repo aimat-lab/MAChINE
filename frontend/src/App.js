@@ -74,9 +74,8 @@ export default function App() {
   const logout = () => {
     setRunOnboarding(false)
     setAdminMode(false)
-    api.stopTraining()
-    api.logout()
     setUserName(null)
+    api.stopTraining().then(() => api.logout())
     // TrainingContext is reset in Navbar
   }
 
