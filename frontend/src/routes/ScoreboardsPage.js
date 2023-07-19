@@ -26,7 +26,10 @@ import { camelToNaturalString } from '../utils'
  * @constructor
  */
 export default function ScoreboardsPage() {
-  const [selectedDataset, setSelectedDataset] = React.useState({ name: '' })
+  const [selectedDataset, setSelectedDataset] = React.useState({
+    name: '',
+    labelDescriptors: [],
+  })
   const [selectedDatasetName, setSelectedDatasetName] = React.useState('')
   const [selectedLabel, setSelectedLabel] = React.useState('')
   const [datasets, setDatasets] = React.useState([])
@@ -42,8 +45,10 @@ export default function ScoreboardsPage() {
   }, [])
 
   React.useEffect(() => {
-    refresh()
-  }, [training.trainingStatus])
+    if (selectedDataset && selectedLabel) {
+      refresh()
+    }
+  }, [training.trainingStatus, selectedDatasetName, selectedLabel])
 
   const handleDatasetSelection = (newValue) => {
     const ds = datasets.find((dataset) => dataset.name === newValue)
@@ -61,9 +66,11 @@ export default function ScoreboardsPage() {
    * all fitting of the current use to be able to highlight them
    */
   function refresh() {
-    api.getScoreboardSummaries('3', ['Solubility']).then((data) => {
-      setFittingRows(data)
-    })
+    api
+      .getScoreboardSummaries(selectedDataset.datasetID, [selectedLabel])
+      .then((data) => {
+        setFittingRows(data)
+      })
     api.getFittings().then((data) => {
       setHighlightedRows(data)
     })
