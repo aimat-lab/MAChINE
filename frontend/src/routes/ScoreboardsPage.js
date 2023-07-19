@@ -143,34 +143,6 @@ export default function ScoreboardsPage() {
       minWidth: 160,
     },
     {
-      field: 'datasetName',
-      headerName: 'Dataset Name',
-      headerAlign: 'center',
-      align: 'center',
-      flex: 40,
-      minWidth: 225,
-      renderCell: (params) => {
-        return <div>{`${params.row.datasetName} #${params.row.datasetID}`}</div>
-      },
-    },
-    {
-      field: 'datasetID',
-      headerName: 'Dataset ID',
-    },
-    {
-      field: 'labels',
-      headerName: 'Label',
-      headerAlign: 'center',
-      align: 'center',
-      sortable: false,
-      flex: 10,
-      minWidth: 90,
-      // capitalize the first letter of each label
-      renderCell: (params) => {
-        return <div>{camelToNaturalString(params.value.join(', '))}</div>
-      },
-    },
-    {
       field: 'epochs',
       headerName: 'Epochs',
       headerAlign: 'center',
