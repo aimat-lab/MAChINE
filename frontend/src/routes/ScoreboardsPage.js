@@ -9,6 +9,8 @@ import {
   MenuItem,
   Select,
   Stack,
+  Tab,
+  Tabs,
   Typography,
 } from '@mui/material'
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
@@ -26,6 +28,7 @@ import { camelToNaturalString } from '../utils'
  * @constructor
  */
 export default function ScoreboardsPage() {
+  const [activeTab, setActiveTab] = React.useState(0)
   const [selectedDataset, setSelectedDataset] = React.useState({
     name: '',
     labelDescriptors: [],
@@ -168,6 +171,35 @@ export default function ScoreboardsPage() {
     },
   ]
 
+  function TabPanel({ children, value, index, ...other }) {
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`full-width-tabpanel-${index}`}
+        aria-labelledby={`full-width-tab-${index}`}
+        {...other}
+      >
+        {value === index && (
+          <Box sx={{ p: 3 }}>
+            <Typography>{children}</Typography>
+          </Box>
+        )}
+      </div>
+    )
+  }
+
+  TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+  }
+
+  const handleChange = (event, newValue) => {
+    setActiveTab(newValue)
+    console.log(newValue)
+  }
+
   return (
     <Box
       sx={{
@@ -182,63 +214,66 @@ export default function ScoreboardsPage() {
         },
       }}
     >
-      <Typography sx={{ m: 4 }} variant="h4">
-        Best Models
-      </Typography>
       {adminMode ? <AdminPanel refreshFunc={refresh} /> : null}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          flexDirection: 'row',
-          minWidth: '50vw',
-        }}
-      >
-        <FormControl fullWidth>
-          <InputLabel id="dataset-selector-label" sx={{ m: 2 }}>
-            Dataset
-          </InputLabel>
-          <Select
-            value={selectedDatasetName}
-            label="dataset-selector"
-            onChange={(e) => {
-              handleDatasetSelection(e.target.value)
-            }}
-            sx={{ m: 2 }}
-          >
-            {datasets.map((dataset) => {
-              return (
-                <MenuItem key={dataset.id} value={dataset.name}>
-                  {dataset.name}
-                </MenuItem>
-              )
-            })}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth>
-          <InputLabel id="label-selector-label" sx={{ m: 2 }}>
-            Label
-          </InputLabel>
-          <Select
-            value={selectedLabel}
-            label="label-selector"
-            onChange={(e) => {
-              handleLabelSelection(e.target.value)
-            }}
-            sx={{ m: 2 }}
-          >
-            {'labelDescriptors' in selectedDataset
-              ? selectedDataset.labelDescriptors.map((label) => {
-                  return (
-                    <MenuItem key={label} value={label}>
-                      {camelToNaturalString(label)}
-                    </MenuItem>
-                  )
-                })
-              : null}
-          </Select>
-        </FormControl>
-      </Box>
+      <Tabs value={activeTab} onChange={handleChange}>
+        <Tab label="Best Models" />
+        <Tab label="Best Molecules" />
+      </Tabs>
+      <TabPanel value={activeTab} index={activeTab}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            minWidth: '50vw',
+          }}
+        >
+          <FormControl fullWidth>
+            <InputLabel id="dataset-selector-label" sx={{ m: 2 }}>
+              Dataset
+            </InputLabel>
+            <Select
+              value={selectedDatasetName}
+              label="dataset-selector"
+              onChange={(e) => {
+                handleDatasetSelection(e.target.value)
+              }}
+              sx={{ m: 2 }}
+            >
+              {datasets.map((dataset) => {
+                return (
+                  <MenuItem key={dataset.id} value={dataset.name}>
+                    {dataset.name}
+                  </MenuItem>
+                )
+              })}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="label-selector-label" sx={{ m: 2 }}>
+              Label
+            </InputLabel>
+            <Select
+              value={selectedLabel}
+              label="label-selector"
+              onChange={(e) => {
+                handleLabelSelection(e.target.value)
+              }}
+              sx={{ m: 2 }}
+            >
+              {'labelDescriptors' in selectedDataset
+                ? selectedDataset.labelDescriptors.map((label) => {
+                    return (
+                      <MenuItem key={label} value={label}>
+                        {camelToNaturalString(label)}
+                      </MenuItem>
+                    )
+                  })
+                : null}
+            </Select>
+          </FormControl>
+        </Box>
+      </TabPanel>
       <Card sx={{ maxWidth: '90vw', m: 4 }}>
         <DataTable
           columns={fittingColumns}
