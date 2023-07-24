@@ -25,7 +25,7 @@ export default function BestModels({ passRefreshFunc }) {
   const [selectedLabel, setSelectedLabel] = React.useState('')
   const [datasets, setDatasets] = React.useState([])
   const [highlightedRows, setHighlightedRows] = React.useState([])
-  const [fittingRows, setFittingRows] = React.useState([])
+  const [rows, setRows] = React.useState([])
   const training = React.useContext(TrainingContext)
   const { adminMode } = React.useContext(UserContext)
 
@@ -50,14 +50,15 @@ export default function BestModels({ passRefreshFunc }) {
   }, [training.trainingStatus, selectedDatasetName, selectedLabel])
 
   /**
-   * gets the required info from the backend: all the fittings to be displayed in the Scoreboard and
-   * all fitting of the current use to be able to highlight them
+   * obtains table data from backend:
+   * - fittings to be displayed in the Scoreboard and
+   * - fittings of the current user
    */
   function refresh() {
     api
       .getScoreboardSummaries(selectedDataset.datasetID, [selectedLabel])
       .then((data) => {
-        setFittingRows(data)
+        setRows(data)
       })
     api.getFittings().then((data) => {
       setHighlightedRows(data)
@@ -238,7 +239,7 @@ export default function BestModels({ passRefreshFunc }) {
       <Card sx={{ maxWidth: '90vw', m: 4 }}>
         <DataTable
           columns={fittingColumns}
-          rows={fittingRows}
+          rows={rows}
           highlightedRows={highlightedRows}
         />
       </Card>
