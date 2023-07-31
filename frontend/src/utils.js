@@ -77,7 +77,6 @@ function capitalizeWordsAfterSpaces(text) {
  * @type {string[]}
  */
 export const activationFuncs = [
-  'Linear',
   'ReLU',
   'Sigmoid',
   'Softmax',
