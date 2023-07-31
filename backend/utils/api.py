@@ -262,7 +262,7 @@ class Scoreboard(Resource):
         :return:
         """
         separated_labels = labels.split(',')
-        return list(sh.get_filtered_scoreboard(dataset_id, separated_labels).values())
+        return list(sh.get_filtered_model_scoreboard(dataset_id, separated_labels).values())
 
     def delete(self, fitting_id=None):
         """
