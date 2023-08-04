@@ -109,20 +109,22 @@ export default {
    * Requests scoreboard data from backend
    * @returns {Promise<AxiosResponse<*[]> | *[]>} Promise that returns the scoreboard list (response data) without exception handling
    */
-  async getScoreboardSummaries(datasetId, labels) {
-    return api.get(`/scoreboard/${datasetId}/${labels}`).then((response) => {
-      return response.data
-    })
+  async getModelScoreboard(datasetId, labels) {
+    return api
+      .get(`/mod-scoreboard/${datasetId}/${labels}`)
+      .then((response) => {
+        return response.data
+      })
   },
 
   /**
-   * Request the deletion of a specific scoreboard entry
+   * Request the deletion of a specific model scoreboard entry
    * @param fittingID {string} ID of the fitting to be deleted
    * @returns {Promise<null>} Promise that returns nothing, but catches exceptions
    */
   async deleteScoreboardFitting(fittingID) {
     return api
-      .delete(`/scoreboard/${fittingID}`)
+      .delete(`/mod-scoreboard/${fittingID}`)
       .then(() => {})
       .catch(() => {})
   },
@@ -133,7 +135,42 @@ export default {
    */
   async deleteScoreboardFittings() {
     return api
-      .delete('/scoreboard')
+      .delete('/mod-scoreboard')
+      .then(() => {})
+      .catch(() => {})
+  },
+
+  /**
+   * Requests molecule scoreboard data from backend
+   * @param label {string} Analyzed molecule characteristic
+   * @returns {Promise<AxiosResponse<*[]> | *[]>} Promise that returns the scoreboard list (response data) without exception handling
+   */
+  async getMoleculeScoreboard(label) {
+    return api.get(`/mol-scoreboard/${label}`).then((response) => {
+      return response.data
+    })
+  },
+
+  /**
+   * Request the deletion of a specific molecule scoreboard entry
+   * @param fittingID {string} ID of the fitting to be deleted
+   * @param moleculeName {string} Name of the molecule to be deleted
+   * @returns {Promise<null>} Promise that returns nothing, but catches exceptions
+   */
+  async deleteScoreboardMolecule(fittingID, moleculeName) {
+    return api
+      .delete(`/mol-scoreboard/${fittingID}/${moleculeName}`)
+      .then(() => {})
+      .catch(() => {})
+  },
+
+  /**
+   * Requests the deletion of all molecule scoreboard entries
+   * @returns {Promise<null>} Promise that returns nothing, but catches exceptions
+   */
+  async deleteScoreboardMolecules() {
+    return api
+      .delete('/mol-scoreboard')
       .then(() => {})
       .catch(() => {})
   },

@@ -56,7 +56,7 @@ export default function BestModels({ passRefreshFunc }) {
    */
   function refresh() {
     api
-      .getScoreboardSummaries(selectedDataset.datasetID, [selectedLabel])
+      .getModelScoreboard(selectedDataset.datasetID, [selectedLabel])
       .then((data) => {
         setRows(data)
       })

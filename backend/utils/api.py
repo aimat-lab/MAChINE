@@ -538,7 +538,7 @@ api.add_resource(Fittings, '/users/<user_id>/fittings')
 api.add_resource(Analyze, '/users/<user_id>/analyze')
 api.add_resource(Train, '/users/<user_id>/train')
 # Non-user-specific resources
-api.add_resource(ModelScoreboard, '/mod-scoreboard/<fitting_id>', '/scoreboard', '/scoreboard/<dataset_id>/<labels>')
+api.add_resource(ModelScoreboard, '/mod-scoreboard/<fitting_id>', '/mod-scoreboard', '/mod-scoreboard/<dataset_id>/<labels>')
 api.add_resource(MoleculeScoreboard, '/mol-scoreboard/<label>', '/mol-scoreboard/<fitting_id>/<name>', '/mol-scoreboard')
 api.add_resource(Datasets, '/datasets')
 api.add_resource(Histograms, '/histograms/<dataset_id>/<labels>')
