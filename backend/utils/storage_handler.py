@@ -333,16 +333,13 @@ class StorageHandler:
         for fitting_id, fitting_summary in self.scoreboard_summaries.items():
             if fitting_summary.get('datasetID') == dataset_id and set(fitting_summary.get('labels')) == set(labels):
                 filtered_fittings[fitting_id] = fitting_summary
-        print(filtered_fittings)
         return filtered_fittings
 
     def get_filtered_molecule_scoreboard(self, label):
-        print(f'Getting filtered molecule scoreboard for label {label}')
         filtered_molecules = dict()
         for scoreboard_mol_id, scoreboard_mol in self.scoreboard_molecules.items():
             if label in scoreboard_mol.keys():
                 filtered_molecules[scoreboard_mol_id] = scoreboard_mol
-        print(filtered_molecules)
         return filtered_molecules
 
     def delete_scoreboard_fitting(self, fitting_id):

@@ -35,8 +35,8 @@ export default function ScoreboardsPage() {
     >
       {adminMode ? <AdminPanel refreshFunc={refreshFuncs[activeTab]} /> : null}
       <Tabs value={activeTab} onChange={handleChange}>
-        <Tab label="Best Models" key="0" />
-        <Tab label="Best Molecules" key="1" />
+        <Tab label="Best Models" />
+        <Tab label="Best Molecules" />
       </Tabs>
       <TabPanel value={activeTab} index={0}>
         <BestModels

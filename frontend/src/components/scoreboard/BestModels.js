@@ -203,9 +203,9 @@ export default function BestModels({ passRefreshFunc }) {
             }}
             sx={{ m: 2 }}
           >
-            {datasets.map((dataset) => {
+            {datasets.map((dataset, index) => {
               return (
-                <MenuItem key={dataset.id} value={dataset.name}>
+                <MenuItem key={index} value={dataset.name}>
                   {dataset.name}
                 </MenuItem>
               )
