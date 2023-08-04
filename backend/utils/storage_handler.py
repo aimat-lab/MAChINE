@@ -337,10 +337,13 @@ class StorageHandler:
         return filtered_fittings
 
     def get_filtered_molecule_scoreboard(self, label):
+        print(f'Getting filtered molecule scoreboard for label {label}')
         filtered_molecules = dict()
         for scoreboard_mol_id, scoreboard_mol in self.scoreboard_molecules.items():
-            if scoreboard_mol.get('label') == label:
+            if label in scoreboard_mol.keys():
                 filtered_molecules[scoreboard_mol_id] = scoreboard_mol
+        print(filtered_molecules)
+        return filtered_molecules
 
     def delete_scoreboard_fitting(self, fitting_id):
         self.scoreboard_summaries.pop(fitting_id, None)
@@ -356,7 +359,7 @@ class StorageHandler:
 
     def delete_scoreboard_molecules(self):
         self.scoreboard_molecules = dict()
-        self.__save_scoreboard_summaries()
+        self.__save_molecule_scoreboard()
 
     def get_fitting_summaries(self, user_id):
         return self.get_user_handler(user_id).get_fitting_summaries()
@@ -433,8 +436,9 @@ class StorageHandler:
 
     def __add_molecule_to_scoreboard(self, smiles, name, username, fitting_id, results):
         for label, value in results.items():
-            self.scoreboard_molecules[f'{fitting_id}|{smiles}'] = {'name': name, 'username': username,
+            self.scoreboard_molecules[f'{fitting_id}|{name}'] = {'name': name, 'username': username,
                                                                    'fittingID': fitting_id,
+                                                                   'smiles': smiles,
                                                                    f'{label}': value}
         self.__save_molecule_scoreboard()
 
@@ -447,6 +451,8 @@ add_molecule = _inst.add_molecule
 add_user_handler = _inst.add_user_handler
 delete_scoreboard_fitting = _inst.delete_scoreboard_fitting
 delete_scoreboard_fittings = _inst.delete_scoreboard_fittings
+delete_scoreboard_molecule = _inst.delete_scoreboard_molecule
+delete_scoreboard_molecules = _inst.delete_scoreboard_molecules
 delete_user_handler = _inst.delete_user_handler
 get_base_model = _inst.get_base_model
 get_base_models = _inst.get_base_models
@@ -458,6 +464,7 @@ get_fitting_summary = _inst.get_fitting_summary
 get_fitting_summaries = _inst.get_fitting_summaries
 get_scoreboard_models = _inst.get_scoreboard_models
 get_filtered_model_scoreboard = _inst.get_filtered_model_scoreboard
+get_filtered_molecule_scoreboard = _inst.get_filtered_molecule_scoreboard
 get_model_summary = _inst.get_model_summary
 get_model_summaries = _inst.get_model_summaries
 get_molecules = _inst.get_molecules
