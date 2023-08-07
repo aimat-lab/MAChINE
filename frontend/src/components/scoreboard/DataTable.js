@@ -14,7 +14,7 @@ import PropTypes from 'prop-types'
 export default function DataTable({ columns, rows, highlightedRows }) {
   return (
     <DataGrid
-      sx={{ height: '72vh', width: '90vw' }}
+      sx={{ height: '60vh', width: '90vw' }}
       rows={rows}
       columns={columns}
       disableColumnMenu={true}
@@ -43,8 +43,6 @@ export default function DataTable({ columns, rows, highlightedRows }) {
             alignItems="center"
             justifyContent="center"
           >
-            No trained models yet.
-            <br />
             Be the first!
           </Stack>
         ),

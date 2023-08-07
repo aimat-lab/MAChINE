@@ -16,24 +16,17 @@ import UserContext from '../../context/UserContext'
 import DataTable from './DataTable'
 import PropTypes from 'prop-types'
 
-export default function BestModels({ passRefreshFunc }) {
+export default function BestModels({ passRefreshFunc, datasets }) {
   const [selectedDataset, setSelectedDataset] = React.useState({
     name: '',
     labelDescriptors: [],
   })
   const [selectedDatasetName, setSelectedDatasetName] = React.useState('')
   const [selectedLabel, setSelectedLabel] = React.useState('')
-  const [datasets, setDatasets] = React.useState([])
   const [highlightedRows, setHighlightedRows] = React.useState([])
   const [rows, setRows] = React.useState([])
   const training = React.useContext(TrainingContext)
   const { adminMode } = React.useContext(UserContext)
-
-  React.useEffect(() => {
-    api.getDatasets().then((datasetList) => {
-      setDatasets(datasetList)
-    })
-  }, [])
 
   React.useEffect(() => {
     if (datasets.length > 0) {
@@ -249,4 +242,5 @@ export default function BestModels({ passRefreshFunc }) {
 
 BestModels.propTypes = {
   passRefreshFunc: PropTypes.func,
+  datasets: PropTypes.array,
 }

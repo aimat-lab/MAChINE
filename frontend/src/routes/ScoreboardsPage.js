@@ -4,6 +4,8 @@ import UserContext from '../context/UserContext'
 import PropTypes from 'prop-types'
 import BestModels from '../components/scoreboard/BestModels'
 import AdminPanel from '../components/scoreboard/AdminPanel'
+import BestMolecules from '../components/scoreboard/BestMolecules'
+import api from '../api'
 
 /**
  * Displays an admin panel when in admin mode and a tabbed view of the best models and best molecules
@@ -11,9 +13,20 @@ import AdminPanel from '../components/scoreboard/AdminPanel'
  */
 export default function ScoreboardsPage() {
   const [activeTab, setActiveTab] = React.useState(0)
+  const [datasets, setDatasets] = React.useState([])
+  const [labels, setLabels] = React.useState(new Set())
   const { adminMode } = React.useContext(UserContext)
 
   const refreshFuncs = { 0: null, 1: null }
+
+  React.useEffect(() => {
+    api.getDatasets().then((datasetList) => {
+      setDatasets(datasetList)
+      setLabels(
+        new Set(datasetList.map((dataset) => dataset.labelDescriptors).flat())
+      )
+    })
+  }, [])
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue)
@@ -43,6 +56,15 @@ export default function ScoreboardsPage() {
           passRefreshFunc={(refreshFunc) => {
             refreshFuncs[0] = refreshFunc
           }}
+          datasets={datasets}
+        />
+      </TabPanel>
+      <TabPanel value={activeTab} index={1}>
+        <BestMolecules
+          passRefreshFunc={(refreshFunc) => {
+            refreshFuncs[1] = refreshFunc
+          }}
+          labels={[...labels]}
         />
       </TabPanel>
     </Box>
