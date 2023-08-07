@@ -8,6 +8,9 @@ export const themeBase = {
     connected: {
       main: '#6dcd00',
     },
+    continue: {
+      main: '#6dcd00',
+    },
   },
   components: {
     MuiDataGrid: {
@@ -33,6 +36,9 @@ export const themeBase = {
     fontWeightRegular: 400,
     fontWeightMedium: 400,
   },
+  logo: {
+    main: '/logo.svg',
+  },
 }
 
 // Create the light theme.
@@ -45,6 +51,9 @@ export const themeLight = createTheme(
       },
       contrastbackground: {
         main: '#137C83',
+      },
+      continue: {
+        main: '#68C1C7',
       },
     },
     components: {
@@ -70,6 +79,11 @@ export const themeLight = createTheme(
     home: {
       mascot: '/molele.svg',
     },
+    stepper: {
+      start: '#137C83',
+      mid: '#157f85',
+      end: '#1d8b93',
+    },
     darkMode: false,
   })
 )
@@ -81,6 +95,10 @@ export const themeDark = createTheme(
       primary: {
         main: '#dc3984',
         overlay: '#7E2E54',
+      },
+      continue: {
+        main: '#144a60',
+        alt: '#f27121',
       },
       mode: 'dark',
     },
@@ -112,6 +130,11 @@ export const themeDark = createTheme(
     },
     home: {
       mascot: '/molele-dark.svg',
+    },
+    stepper: {
+      start: '#b93170',
+      mid: '#c93278',
+      end: '#dc3984',
     },
     darkMode: true,
   })
