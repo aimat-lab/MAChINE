@@ -10,6 +10,7 @@ import TrainingContext from '../../context/TrainingContext'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../logo.svg'
 import PropTypes from 'prop-types'
+import HelpModeButton from './HelpModeButton'
 
 const links = {
   home: {
@@ -41,11 +42,7 @@ const links = {
  * @param helpModeButton button to toggle Help Mode
  * @returns {JSX.Element}
  */
-export default function Navbar({
-  logoutFunction,
-  darkModeButton,
-  helpModeButton,
-}) {
+export default function Navbar({ logoutFunction, darkModeButton }) {
   const locationName = useLocation().pathname
   const user = React.useContext(UserContext)
   const training = React.useContext(TrainingContext)
@@ -148,8 +145,7 @@ export default function Navbar({
           </>
         )}
         <ServerStatusButton />
-        {helpModeButton}
-        {darkModeButton}
+        <HelpModeButton />
       </Toolbar>
       <style>{`
         a {
@@ -176,5 +172,4 @@ export default function Navbar({
 Navbar.propTypes = {
   logoutFunction: PropTypes.func.isRequired,
   darkModeButton: PropTypes.element,
-  helpModeButton: PropTypes.element,
 }

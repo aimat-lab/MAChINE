@@ -6,13 +6,13 @@ import {
   CardActions,
   CardContent,
   CardMedia,
-  Typography,
-  useTheme,
-  Stepper,
   Step,
-  StepLabel,
   StepConnector,
   stepConnectorClasses,
+  StepLabel,
+  Stepper,
+  Typography,
+  useTheme,
 } from '@mui/material'
 import CreateIcon from '@mui/icons-material/Create'
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -24,6 +24,7 @@ import Image from 'mui-image'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { styled } from '@mui/material/styles'
+import HelpContext from '../context/HelpContext'
 
 /**
  * Introductory page including credits, hints, links to core components
@@ -117,46 +118,6 @@ export default function HomePage({ startOnboarding }) {
   )
 }
 
-const MAChINESteps = [
-  {
-    label: 'Configure',
-    description:
-      'Configure custom machine learning models to predict properties of molecules',
-    icon: SettingsIcon,
-    location: '/models',
-    buttonVerb: 'configuring',
-  },
-  {
-    label: 'Train',
-    description: 'Train your custom models and watch them learn',
-    icon: TimelineIcon,
-    location: '/models',
-    buttonVerb: 'training',
-  },
-  {
-    label: 'Draw',
-    description: 'Draw any molecule imaginable and preview it in 3D',
-    icon: CreateIcon,
-    location: '/molecules',
-    buttonVerb: 'drawing',
-  },
-  {
-    label: 'Analyze',
-    description:
-      'Analyze your molecules for various properties with the models you trained',
-    icon: AssessmentIcon,
-    location: '/molecules',
-    buttonVerb: 'analyzing',
-  },
-  {
-    label: 'Compare',
-    description: "Compare your molecules and models to other users' creations",
-    icon: CompareArrowsIcon,
-    location: '/results',
-    buttonVerb: 'comparing',
-  },
-]
-
 // A hexagonal div
 const StepIconContainer = styled('div')(({ theme, ownerState }) => ({
   backgroundColor:
@@ -170,11 +131,14 @@ const StepIconContainer = styled('div')(({ theme, ownerState }) => ({
   top: -3.8675,
   position: 'relative',
   ...(ownerState.active && {
-    backgroundColor: theme.palette.continue.main,
+    backgroundColor: theme.stepper.active,
     boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
   }),
   ...(ownerState.completed && {
-    backgroundColor: theme.stepper.end,
+    backgroundColor: theme.stepper.completed,
+  }),
+  ...(ownerState.isNext && {
+    backgroundColor: theme.palette.continue.main,
   }),
   clipPath: 'polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%)',
 }))
@@ -202,11 +166,11 @@ const StepperConnector = styled(StepConnector)(({ theme }) => ({
   },
 }))
 
-function StepperIcon({ active, completed, icon }) {
+function StepperIcon({ active, completed, isNext, icon }) {
   console.log(active, completed, icon)
   const Icon = icon
   return (
-    <StepIconContainer ownerState={{ completed, active }}>
+    <StepIconContainer ownerState={{ completed, active, isNext }}>
       <Icon />
     </StepIconContainer>
   )
@@ -215,17 +179,68 @@ function StepperIcon({ active, completed, icon }) {
 StepperIcon.propTypes = {
   active: PropTypes.bool,
   completed: PropTypes.bool,
+  isNext: PropTypes.bool,
   icon: PropTypes.node,
 }
 
 function HomePageStepper() {
-  const steps = MAChINESteps
-  const [activeStep, setActiveStep] = React.useState(0)
   const navigate = useNavigate()
 
   const handleStep = () => {
     navigate(steps[activeStep].location)
   }
+  const helpContext = React.useContext(HelpContext)
+
+  const steps = [
+    {
+      label: 'Configure',
+      description:
+        'Configure custom machine learning models to predict properties of molecules',
+      icon: SettingsIcon,
+      location: '/models',
+      buttonVerb: 'configuring',
+      completed: helpContext.madeModel,
+    },
+    {
+      label: 'Train',
+      description: 'Train your custom models and watch them learn',
+      icon: TimelineIcon,
+      location: '/models',
+      buttonVerb: 'training',
+      completed: helpContext.madeFitting,
+    },
+    {
+      label: 'Draw',
+      description: 'Draw any molecule imaginable and preview it in 3D',
+      icon: CreateIcon,
+      location: '/molecules',
+      buttonVerb: 'drawing',
+      completed: helpContext.madeMolecule,
+    },
+    {
+      label: 'Analyze',
+      description:
+        'Analyze your molecules for various properties with the models you trained',
+      icon: AssessmentIcon,
+      location: '/molecules',
+      buttonVerb: 'analyzing',
+      completed: helpContext.madeAnalysis,
+    },
+    {
+      label: 'Compare',
+      description:
+        "Compare your molecules and models to other users' creations",
+      icon: CompareArrowsIcon,
+      location: '/results',
+      buttonVerb: 'comparing',
+      completed: helpContext.madeComparison,
+    },
+  ]
+
+  const nextIndex = steps.findIndex((step) => !step.completed)
+  const [activeStep, setActiveStep] = React.useState(
+    nextIndex > -1 ? nextIndex : 0
+  )
 
   return (
     <Box>
@@ -235,12 +250,16 @@ function HomePageStepper() {
         connector={<StepperConnector />}
       >
         {steps.map(
-          ({ label, description, icon, location, buttonVerb }, index) => (
+          (
+            { label, description, icon, location, buttonVerb, completed },
+            index
+          ) => (
             <Step key={label}>
               <StepLabel
                 StepIconProps={{
                   active: activeStep === index,
-                  completed: activeStep > index,
+                  completed,
+                  isNext: index === nextIndex,
                   icon,
                 }}
                 StepIconComponent={StepperIcon}

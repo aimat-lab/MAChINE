@@ -83,6 +83,8 @@ export const themeLight = createTheme(
       start: '#137C83',
       mid: '#157f85',
       end: '#1d8b93',
+      active: '#4db1b6',
+      completed: '#68C1C7',
     },
     darkMode: false,
   })
@@ -97,7 +99,7 @@ export const themeDark = createTheme(
         overlay: '#7E2E54',
       },
       continue: {
-        main: '#144a60',
+        main: '#4f9f88',
         alt: '#f27121',
       },
       mode: 'dark',
@@ -135,6 +137,8 @@ export const themeDark = createTheme(
       start: '#b93170',
       mid: '#c93278',
       end: '#dc3984',
+      active: '#b92e73',
+      completed: '#144a60',
     },
     darkMode: true,
   })

@@ -104,6 +104,7 @@ export default function MoleculesPage() {
         .addMolecule(smiles, cml, molName)
         .then(() => {
           refreshMolecules(new Molecule(molName, smiles, cml))
+          help.setMadeMolecule(true)
         })
         .catch(() =>
           showSnackMessage(

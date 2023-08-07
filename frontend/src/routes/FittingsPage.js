@@ -269,11 +269,15 @@ export default function FittingsPage() {
 }
 
 function FittingDetails({ fitting, onClickFunc }) {
+  const help = React.useContext(HelpContext)
   const [loading, setLoading] = React.useState(false)
 
   function handleClick() {
     setLoading(true)
-    onClickFunc(fitting).then(() => setLoading(false))
+    onClickFunc(fitting).then(() => {
+      setLoading(false)
+      help.setMadeAnalysis(true)
+    })
   }
 
   return (

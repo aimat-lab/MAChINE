@@ -77,6 +77,7 @@ export default function TrainingPage() {
         .then((response) => {
           setOpenSnackError(!response)
           setLoadTraining(response)
+          help.setMadeFitting(true)
         })
     }
   }
