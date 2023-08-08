@@ -3,6 +3,7 @@ import {
   Box,
   Card,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -11,20 +12,22 @@ import DataTable from './DataTable'
 import { camelToNaturalString } from '../../utils'
 import api from '../../api'
 import PropTypes from 'prop-types'
+import AdminPanel from './AdminPanel'
+import UserContext from '../../context/UserContext'
+import DeleteIcon from '@mui/icons-material/Delete'
 
-export default function BestMolecules({ passRefreshFunc, labels }) {
+/**
+ * Displays a table of the best molecules for a selected label.
+ * When in adminMode, deletion of selected or all molecules is possible.
+ * @param labels
+ * @returns {JSX.Element}
+ * @constructor
+ */
+export default function BestMolecules({ labels }) {
   const [rows, setRows] = React.useState([])
   const [highlightedRows, setHighlightedRows] = React.useState([])
   const [selectedLabel, setSelectedLabel] = React.useState(labels[0])
-
-  function makeGridCompatible(data) {
-    return data.map((row) => {
-      row.id = `${row.fittingID}|${row.name}`
-      row.analyzedValue = row[selectedLabel]
-      delete row[selectedLabel]
-      return row
-    })
-  }
+  const { adminMode } = React.useContext(UserContext)
 
   /**
    * obtains table data from backend:
@@ -46,9 +49,27 @@ export default function BestMolecules({ passRefreshFunc, labels }) {
     }
   }, [selectedLabel])
 
-  React.useEffect(() => {
-    passRefreshFunc(refresh)
-  }, [])
+  const deleteEntry = (id) => {
+    const [fittingID, name] = id.split('|')
+    api.deleteScoreboardMolecule(fittingID, name).then(() => {
+      refresh()
+    })
+  }
+
+  function deleteAllEntries() {
+    api.deleteScoreboardMolecules().then(() => {
+      refresh()
+    })
+  }
+
+  function makeGridCompatible(data) {
+    return data.map((row) => {
+      row.id = `${row.fittingID}|${row.name}`
+      row.analyzedValue = row[selectedLabel]
+      delete row[selectedLabel]
+      return row
+    })
+  }
 
   const columns = [
     {
@@ -66,6 +87,36 @@ export default function BestMolecules({ passRefreshFunc, labels }) {
       align: 'center',
       flex: 40,
       minWidth: 100,
+      renderCell: (params) => {
+        return (
+          <Box
+            display="flex"
+            sx={{
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <Box
+              display="flex"
+              sx={{
+                flexGrow: '1',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {params.value}
+            </Box>
+            {adminMode ? (
+              <IconButton
+                sx={{ alignItems: 'center' }}
+                onClick={() => deleteEntry(params.id)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            ) : null}
+          </Box>
+        )
+      },
     },
     {
       field: 'analyzedValue',
@@ -98,6 +149,7 @@ export default function BestMolecules({ passRefreshFunc, labels }) {
         alignItems: 'center',
       }}
     >
+      {adminMode ? <AdminPanel deleteAllFunc={deleteAllEntries} /> : null}
       <FormControl sx={{ width: '30vw', minWidth: '100px' }}>
         <InputLabel id="label-selector-label" sx={{ m: 2 }}>
           Label
@@ -131,6 +183,5 @@ export default function BestMolecules({ passRefreshFunc, labels }) {
 }
 
 BestMolecules.propTypes = {
-  passRefreshFunc: PropTypes.func,
   labels: PropTypes.array,
 }

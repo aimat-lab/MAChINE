@@ -15,8 +15,9 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import UserContext from '../../context/UserContext'
 import DataTable from './DataTable'
 import PropTypes from 'prop-types'
+import AdminPanel from './AdminPanel'
 
-export default function BestModels({ passRefreshFunc, datasets }) {
+export default function BestModels({ datasets }) {
   const [selectedDataset, setSelectedDataset] = React.useState({
     name: '',
     labelDescriptors: [],
@@ -57,10 +58,6 @@ export default function BestModels({ passRefreshFunc, datasets }) {
       setHighlightedRows(data)
     })
   }
-
-  React.useEffect(() => {
-    passRefreshFunc(refresh)
-  }, [])
 
   const deleteEntry = (id) => {
     api.deleteScoreboardFitting(id).then(() => {
@@ -167,6 +164,12 @@ export default function BestModels({ passRefreshFunc, datasets }) {
     setSelectedLabel(newValue)
   }
 
+  function deleteEntries() {
+    api.deleteScoreboardFittings().then(() => {
+      refresh()
+    })
+  }
+
   return (
     <Box
       sx={{
@@ -176,6 +179,7 @@ export default function BestModels({ passRefreshFunc, datasets }) {
         alignItems: 'center',
       }}
     >
+      {adminMode ? <AdminPanel deleteAllFunc={deleteEntries} /> : null}
       <Box
         sx={{
           display: 'flex',
@@ -241,6 +245,5 @@ export default function BestModels({ passRefreshFunc, datasets }) {
 }
 
 BestModels.propTypes = {
-  passRefreshFunc: PropTypes.func,
   datasets: PropTypes.array,
 }
