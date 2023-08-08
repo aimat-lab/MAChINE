@@ -115,6 +115,7 @@ export default {
       .then((response) => {
         return response.data
       })
+      .catch(() => {})
   },
 
   /**
@@ -146,9 +147,12 @@ export default {
    * @returns {Promise<AxiosResponse<*[]> | *[]>} Promise that returns the scoreboard list (response data) without exception handling
    */
   async getMoleculeScoreboard(label) {
-    return api.get(`/mol-scoreboard/${label}`).then((response) => {
-      return response.data
-    })
+    return api
+      .get(`/mol-scoreboard/${label}`)
+      .then((response) => {
+        return response.data
+      })
+      .catch(() => {})
   },
 
   /**
