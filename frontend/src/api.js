@@ -115,7 +115,7 @@ export default {
       .then((response) => {
         return response.data
       })
-      .catch(() => {})
+      .catch(() => [])
   },
 
   /**
@@ -152,7 +152,7 @@ export default {
       .then((response) => {
         return response.data
       })
-      .catch(() => {})
+      .catch(() => [])
   },
 
   /**
