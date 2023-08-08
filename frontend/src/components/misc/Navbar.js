@@ -146,6 +146,7 @@ export default function Navbar({ logoutFunction, darkModeButton }) {
         )}
         <ServerStatusButton />
         <HelpModeButton />
+        {darkModeButton}
       </Toolbar>
       <style>{`
         a {
