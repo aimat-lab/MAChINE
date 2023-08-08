@@ -120,7 +120,9 @@ export default function BestMolecules({ labels }) {
     },
     {
       field: 'analyzedValue',
-      headerName: camelToNaturalString(selectedLabel),
+      headerName: camelToNaturalString(
+        selectedLabel !== undefined ? selectedLabel : ''
+      ),
       headerAlign: 'center',
       align: 'center',
       flex: 40,
