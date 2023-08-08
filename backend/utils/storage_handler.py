@@ -22,7 +22,7 @@ __all__ = ['add_analysis',
            'get_fitting',
            'get_fitting_summary',
            'get_fitting_summaries',
-           'get_scoreboard_summaries',
+           'get_scoreboard_models',
            'get_model_summary',
            'get_model_summaries',
            'get_molecules',
@@ -168,8 +168,8 @@ class UserDataStorageHandler:
     def __load_summary_file(self, filename):
         content = dict()
         #
-        #file_path = (self.user_path / filename)
-        #if file_path.exists():
+        # file_path = (self.user_path / filename)
+        # if file_path.exists():
         #    file = file_path.open('r')
         #    try:
         #        content = json.load(file)
@@ -180,10 +180,10 @@ class UserDataStorageHandler:
         return content
 
     def __save_summary_file(self, filename, content):
-        #file_path = (self.user_path / filename)
-        #file = file_path.open('w')
-        #json.dump(content, file)
-        #file.close()
+        # file_path = (self.user_path / filename)
+        # file = file_path.open('w')
+        # json.dump(content, file)
+        # file.close()
         return
 
     def __build_folder_structure(self):
@@ -210,6 +210,7 @@ class StorageHandler:
         self.__read_base_model_types()
         self.__read_base_models()
         self.scoreboard_summaries = self.__read_scoreboard_summaries()
+        self.scoreboard_molecules = self.__read_scoreboard_molecules()
 
     def add_user_handler(self, user_id, username) -> UserDataStorageHandler:
         self.user_storage_handler[user_id] = UserDataStorageHandler(user_id, username)
@@ -263,7 +264,12 @@ class StorageHandler:
 
     # Molecule Analyses
     def add_analysis(self, user_id, smiles, fitting_id, results):
-        self.get_user_handler(user_id).add_analysis(smiles, fitting_id, results)
+        user_handler = self.get_user_handler(user_id)
+        user_handler.add_analysis(smiles, fitting_id, results)
+        if user_handler.username is not None:
+            molecule = user_handler.get_molecules()[smiles]
+            self.__add_molecule_to_scoreboard(smiles, molecule['name'], user_handler.username, fitting_id,
+                                              results)
 
     # Models
     # model is the actual model, not a summary
@@ -291,7 +297,8 @@ class StorageHandler:
                                                          model_id).get(
                                                          'name'),
                                                      'datasetID': dataset_id,
-                                                     'datasetName': self.get_dataset_summaries().get(dataset_id).get('name'),
+                                                     'datasetName': self.get_dataset_summaries().get(dataset_id).get(
+                                                         'name'),
                                                      'labels': labels,
                                                      'epochs': epochs,
                                                      'batchSize': batch_size,
@@ -315,8 +322,25 @@ class StorageHandler:
     def get_fitting_summary(self, user_id, fitting_id):
         return self.get_user_handler(user_id).get_fitting_summary(fitting_id)
 
-    def get_scoreboard_summaries(self):
+    def get_scoreboard_models(self):
         return self.scoreboard_summaries
+
+    def get_scoreboard_molecules(self):
+        return self.scoreboard_molecules
+
+    def get_filtered_model_scoreboard(self, dataset_id, labels):
+        filtered_fittings = dict()
+        for fitting_id, fitting_summary in self.scoreboard_summaries.items():
+            if fitting_summary.get('datasetID') == dataset_id and set(fitting_summary.get('labels')) == set(labels):
+                filtered_fittings[fitting_id] = fitting_summary
+        return filtered_fittings
+
+    def get_filtered_molecule_scoreboard(self, label):
+        filtered_molecules = dict()
+        for scoreboard_mol_id, scoreboard_mol in self.scoreboard_molecules.items():
+            if label in scoreboard_mol.keys():
+                filtered_molecules[scoreboard_mol_id] = scoreboard_mol
+        return filtered_molecules
 
     def delete_scoreboard_fitting(self, fitting_id):
         self.scoreboard_summaries.pop(fitting_id, None)
@@ -325,6 +349,14 @@ class StorageHandler:
     def delete_scoreboard_fittings(self):
         self.scoreboard_summaries = dict()
         self.__save_scoreboard_summaries()
+
+    def delete_scoreboard_molecule(self, fitting_id, molecule_name):
+        self.scoreboard_molecules.pop(f'{fitting_id}|{molecule_name}', None)
+        self.__save_molecule_scoreboard()
+
+    def delete_scoreboard_molecules(self):
+        self.scoreboard_molecules = dict()
+        self.__save_molecule_scoreboard()
 
     def get_fitting_summaries(self, user_id):
         return self.get_user_handler(user_id).get_fitting_summaries()
@@ -383,6 +415,30 @@ class StorageHandler:
         json.dump(self.scoreboard_summaries, file)
         file.close()
 
+    @staticmethod
+    def __read_scoreboard_molecules():
+        scoreboard_path = _user_data_path / 'molecule_scoreboard.json'
+        data = dict()
+        if scoreboard_path.exists():
+            file = scoreboard_path.open('r')
+            data = json.load(file)
+            file.close()
+        return data
+
+    def __save_molecule_scoreboard(self):
+        scoreboard_path = _user_data_path / 'molecule_scoreboard.json'
+        file = scoreboard_path.open('w')
+        json.dump(self.scoreboard_molecules, file)
+        file.close()
+
+    def __add_molecule_to_scoreboard(self, smiles, name, username, fitting_id, results):
+        for label, value in results.items():
+            self.scoreboard_molecules[f'{fitting_id}|{name}'] = {'name': name, 'username': username,
+                                                                   'fittingID': fitting_id,
+                                                                   'smiles': smiles,
+                                                                   f'{label}': value}
+        self.__save_molecule_scoreboard()
+
 
 _inst = StorageHandler()
 add_analysis = _inst.add_analysis
@@ -392,6 +448,8 @@ add_molecule = _inst.add_molecule
 add_user_handler = _inst.add_user_handler
 delete_scoreboard_fitting = _inst.delete_scoreboard_fitting
 delete_scoreboard_fittings = _inst.delete_scoreboard_fittings
+delete_scoreboard_molecule = _inst.delete_scoreboard_molecule
+delete_scoreboard_molecules = _inst.delete_scoreboard_molecules
 delete_user_handler = _inst.delete_user_handler
 get_base_model = _inst.get_base_model
 get_base_models = _inst.get_base_models
@@ -401,7 +459,9 @@ get_dataset_histograms = _inst.get_dataset_histograms
 get_fitting = _inst.get_fitting
 get_fitting_summary = _inst.get_fitting_summary
 get_fitting_summaries = _inst.get_fitting_summaries
-get_scoreboard_summaries = _inst.get_scoreboard_summaries
+get_scoreboard_models = _inst.get_scoreboard_models
+get_filtered_model_scoreboard = _inst.get_filtered_model_scoreboard
+get_filtered_molecule_scoreboard = _inst.get_filtered_molecule_scoreboard
 get_model_summary = _inst.get_model_summary
 get_model_summaries = _inst.get_model_summaries
 get_molecules = _inst.get_molecules

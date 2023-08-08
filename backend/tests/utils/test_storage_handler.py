@@ -198,7 +198,7 @@ class TestBasicFittingsGroup:
         loaded_fitting = sh.get_fitting(_test_user_id, test_fitting_id)
         assert type(loaded_fitting) == type(test_fitting), 'fitting should get loaded'
 
-        scoreboard_entry = sh.get_scoreboard_summaries().get(test_fitting_id)
+        scoreboard_entry = sh.get_scoreboard_models().get(test_fitting_id)
         wanted_entry = {'id': test_fitting_id,
                         'userName': str(sh.get_user_handler(_test_user_id).username),
                         'modelID': add_test_model,
@@ -262,7 +262,7 @@ def test_fitting_update(sh_fittings, sh_scoreboard, fitting_id, epochs, accuracy
     result_id = sh.update_fitting(_test_user_id, fitting_id, epochs, accuracy, fitting)
     assert result_id == fitting_id, 'Expect returned fitting_id to be equal'
     summary = sh.get_fitting_summary(_test_user_id, fitting_id)
-    scoreboard = sh.get_scoreboard_summaries().get(fitting_id)
+    scoreboard = sh.get_scoreboard_models().get(fitting_id)
     assert summary.get('epochs') == epochs, 'Expected values to be updated'
     assert summary.get('accuracy') == accuracy, 'Expected values to be updated'
     assert scoreboard.get('epochs') == epochs, 'Expected values to be updated'
@@ -325,12 +325,12 @@ class TestScoreboardGroup:
     def test_delete_scoreboard(self, saved_boards, delete_id):
         sh._inst.scoreboard_summaries = copy.deepcopy(saved_boards)
         sh.delete_scoreboard_fitting(delete_id)
-        assert sh.get_scoreboard_summaries().get(delete_id) is None, 'Expected entry to have been deleted'
+        assert sh.get_scoreboard_models().get(delete_id) is None, 'Expected entry to have been deleted'
 
     def test_delete_scoreboards(self, saved_boards):
         sh._inst.scoreboard_summaries = copy.deepcopy(saved_boards)
         sh.delete_scoreboard_fittings()
-        assert sh.get_scoreboard_summaries() == dict(), 'Expected scoreboard to have been cleared'
+        assert sh.get_scoreboard_models() == dict(), 'Expected scoreboard to have been cleared'
 
 
 @pytest.mark.parametrize(

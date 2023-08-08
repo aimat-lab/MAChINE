@@ -47,6 +47,7 @@ parser.add_argument('datasetID')
 parser.add_argument('modelID')
 parser.add_argument('fittingID')
 parser.add_argument('labels')
+parser.add_argument('label')
 parser.add_argument('epochs', type=int)
 parser.add_argument('accuracy', type=float)  # Not used
 parser.add_argument('batchSize', type=int)
@@ -251,18 +252,18 @@ class Fittings(AuthenticatedResource):
         return processed_fittings
 
 
-class Scoreboard(Resource):
+class ModelScoreboard(Resource):
     """
     GET current contents of the scoreboard
     DELETE fitting with given ID from scoreboard. If no ID is given, delete all fittings from scoreboard
     """
-
-    def get(self):
+    def get(self, dataset_id, labels):
         """
-        GET current contents of the scoreboard
-        :return:
+        GET current contents of the scoreboard with matching dataset and label(s)
+        :return:filtered scoreboard
         """
-        return list(sh.get_scoreboard_summaries().values())
+        separated_labels = labels.split(',')
+        return list(sh.get_filtered_model_scoreboard(dataset_id, separated_labels).values())
 
     def delete(self, fitting_id=None):
         """
@@ -271,11 +272,36 @@ class Scoreboard(Resource):
         :param fitting_id: String ID of fitting to delete, or None
         :return: void
         """
-        # call so /scoreboards deletes everything to /scoreboards/<id> deletes a single fitting
+        # call so /mod-scoreboards deletes everything to /mod-scoreboards/<id> deletes a single fitting
         if fitting_id is None:
             return sh.delete_scoreboard_fittings()
         else:
             return sh.delete_scoreboard_fitting(fitting_id)
+
+class MoleculeScoreboard(Resource):
+    """
+    GET current contents of the molecule scoreboard
+    DELETE molecule analysis with given fitting_id and smiles from scoreboard
+    """
+    def get(self, label):
+        """
+        GET current contents of the molecule scoreboard with matching label
+        :return:filtered scoreboard
+        """
+        return list(sh.get_filtered_molecule_scoreboard(label).values())
+
+    def delete(self, fitting_id=None, name=None):
+        """
+        DELETE molecule analysis with given fitting_id and smiles from scoreboard
+        If fitting_id or smiles code are not given, delete all molecules from scoreboard
+        :param fitting_id: String ID of fitting which generated analysis, or None
+        :param name: String assigned to analyzed molecule, or None
+        :return: void
+        """
+        if (fitting_id is None) or (name is None):
+            return sh.delete_scoreboard_molecules()
+        else:
+            return sh.delete_scoreboard_molecule(fitting_id, name)
 
 
 class User(Resource):
@@ -336,7 +362,7 @@ class User(Resource):
     def delete(self, user_id):
         """
         Delete storage of user with given ID
-        Unassociate client socket with ID
+        Disassociate client socket with ID
         :param user_id: String containing ID of user to be deleted
         :return: int, status code depending on failure or success of deletion
         """
@@ -512,7 +538,8 @@ api.add_resource(Fittings, '/users/<user_id>/fittings')
 api.add_resource(Analyze, '/users/<user_id>/analyze')
 api.add_resource(Train, '/users/<user_id>/train')
 # Non-user-specific resources
-api.add_resource(Scoreboard, '/scoreboard/<fitting_id>', '/scoreboard')
+api.add_resource(ModelScoreboard, '/mod-scoreboard/<fitting_id>', '/mod-scoreboard', '/mod-scoreboard/<dataset_id>/<labels>')
+api.add_resource(MoleculeScoreboard, '/mol-scoreboard/<label>', '/mol-scoreboard/<fitting_id>/<name>', '/mol-scoreboard')
 api.add_resource(Datasets, '/datasets')
 api.add_resource(Histograms, '/histograms/<dataset_id>/<labels>')
 api.add_resource(BaseModels, '/baseModels')
