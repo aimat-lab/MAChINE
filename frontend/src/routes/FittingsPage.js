@@ -262,6 +262,7 @@ export default function FittingsPage() {
             open={Boolean(helpAnchorEl)}
             anchorEl={helpAnchorEl}
             onClose={handleHelpPopperClose}
+            placement="bottom"
           />
         </Box>
       </Box>
