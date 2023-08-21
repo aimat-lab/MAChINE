@@ -20,6 +20,7 @@ import HelpContext from '../context/HelpContext'
 import TrainingContext from '../context/TrainingContext'
 import { useNavigate } from 'react-router-dom'
 import TrainingParameterFields from '../components/training/TrainingParameterFields'
+import { pulseAnim } from '../utils'
 
 /**
  * Holds epoch and batch size configuration, as well as selected model and dataset details
@@ -194,7 +195,13 @@ export default function TrainingPage() {
               size="large"
               variant="contained"
               disabled={parameterError}
-              sx={{ m: 2 }}
+              sx={{
+                m: 2,
+                animation:
+                  help.helpMode && !help.madeFitting
+                    ? `${pulseAnim} 2s infinite`
+                    : 'none',
+              }}
               onClick={handleStartStop}
             >
               {startStopButton}

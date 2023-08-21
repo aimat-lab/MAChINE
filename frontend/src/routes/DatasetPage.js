@@ -54,6 +54,7 @@ export default function DatasetPage() {
 
   return (
     <Box sx={{ m: 5 }}>
+      {help.helpMode ? <h1>Select a set to see its labels</h1> : null}
       <Box
         sx={{
           display: 'grid',

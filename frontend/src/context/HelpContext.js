@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 /**
  * provides information about the helpMode being active and other tutorial actions
- * @type {React.Context<{setHelpMode: setHelpMode, helpMode: boolean}>}
+ * @type {React.Context<{setHelpMode: setHelpMode, helpMode: boolean, madeModel: boolean, setMadeModel: setMadeModel, madeFitting: boolean, setMadeFitting: setMadeFitting, madeMolecule: boolean, setMadeMolecule: setMadeMolecule, madeAnalysis: boolean, setMadeAnalysis: setMadeAnalysis, madeComparison: boolean, setMadeComparison: setMadeComparison}>}
  */
 const HelpContext = React.createContext({
   helpMode: false,
