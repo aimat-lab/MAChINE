@@ -336,7 +336,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
         </Box>
         <Button
           size="large"
-          variant="contained"
+          variant="outlined"
           onClick={changeView}
           endIcon={!converting ? <VisibilityIcon /> : null}
           sx={{ ml: 12 }}
@@ -349,7 +349,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
         <Box sx={{ flexGrow: 1 }}></Box>
         <Button
           size="large"
-          variant="outlined"
+          variant="contained"
           className="analyze-button"
           onClick={() =>
             navigate('/trained-models', {

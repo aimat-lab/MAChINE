@@ -191,6 +191,7 @@ const StepperConnector = styled(StepConnector)(({ theme }) => {
   }
 })
 
+// TODO: Move to separate files
 function StepperIcon({ active, completed, isNext, done, icon }) {
   const Icon = icon
   return (
@@ -321,7 +322,7 @@ function HomePageStepper() {
           variant="contained"
           onClick={handleStep}
           sx={{ mt: 1, mr: 1 }}
-          color="continue"
+          color="primary"
         >
           Start {steps[activeStep].buttonVerb}!
         </Button>
