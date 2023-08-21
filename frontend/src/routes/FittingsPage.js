@@ -178,7 +178,7 @@ export default function FittingsPage() {
   } else {
     return (
       <Box sx={{ m: 5 }}>
-        {help.helpMode && !help.madeAnalysis ? <h1>Click to select</h1> : null}
+        {help.helpMode ? <h1>Click to select</h1> : null}
         <Box
           sx={{
             display: 'grid',
