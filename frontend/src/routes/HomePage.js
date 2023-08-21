@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { styled } from '@mui/material/styles'
 import HelpContext from '../context/HelpContext'
+import { pulseAnim } from '../utils'
 
 /**
  * Introductory page including credits, hints, links to core components
@@ -118,6 +119,15 @@ export default function HomePage({ startOnboarding }) {
   )
 }
 
+const StepIconContainerShadow = styled('div')(({ theme, state }) => ({
+  zIndex: 2,
+  ...(state.active && {
+    filter: `drop-shadow(0px 0px 10px ${
+      theme.stepper.active + (theme.palette.mode === 'dark' ? '80' : 'B0')
+    })`,
+  }),
+}))
+
 // A hexagonal div
 const StepIconContainer = styled('div')(({ theme, ownerState }) => ({
   backgroundColor:
@@ -130,49 +140,65 @@ const StepIconContainer = styled('div')(({ theme, ownerState }) => ({
   alignItems: 'center',
   top: -3.8675,
   position: 'relative',
-  ...(ownerState.active && {
-    backgroundColor: theme.stepper.active,
-    boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
-  }),
   ...(ownerState.completed && {
+    // completed step (not proper order)
     backgroundColor: theme.stepper.completed,
-  }),
+  }) /*,
+  ...(ownerState.done && {
+    // completed step (proper order)
+    backgroundColor: theme.stepper.start,
+  }) */ /*
+  ...(ownerState.active && {
+    // selected step, shown using box shadow
+    backgroundColor: theme.stepper.active,
+  }), */,
   ...(ownerState.isNext && {
-    backgroundColor: theme.palette.continue.main,
+    // recommended next step
+    backgroundColor: theme.palette.primary.main,
+    animation: `${pulseAnim} 1.5s ease-in-out infinite`,
   }),
   clipPath: 'polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%)',
 }))
 
-const StepperConnector = styled(StepConnector)(({ theme }) => ({
-  [`&.${stepConnectorClasses.alternativeLabel}`]: {
+// Using a context here because MUI does not allow passing props from step to StepConnector, even though it's a child
+const StepContext = React.createContext({
+  fill: false,
+  first: false,
+  isNext: false,
+})
+
+const StepperConnector = styled(StepConnector)(({ theme }) => {
+  const { fill, first, isNext } = React.useContext(StepContext)
+  return {
     top: 22,
-  },
-  [`&.${stepConnectorClasses.active}`]: {
-    [`& .${stepConnectorClasses.line}`]: {
-      backgroundImage: `linear-gradient( 95deg,${theme.stepper.start} 0%,${theme.stepper.mid} 50%,${theme.palette.continue.main} 100%)`,
-    },
-  },
-  [`&.${stepConnectorClasses.completed}`]: {
-    [`& .${stepConnectorClasses.line}`]: {
-      backgroundImage: `linear-gradient( 95deg,${theme.stepper.start} 0%,${theme.stepper.mid} 50%,${theme.stepper.end} 100%)`,
-    },
-  },
-  [`& .${stepConnectorClasses.line}`]: {
     height: 6,
     border: 0,
     backgroundColor:
       theme.palette.mode === 'dark' ? theme.palette.grey[800] : '#eaeaf0',
     borderRadius: 1,
-  },
-}))
+    [`& .${stepConnectorClasses.line}`]: {
+      borderColor: theme.palette.mode === 'dark' ? '#121212' : '#bdbdbd',
+    },
+    ...(isNext && {
+      backgroundImage: `linear-gradient( 95deg,${theme.stepper.completed} 0%,${theme.stepper.active} 100%,${theme.palette.primary.main})`,
+    }),
+    ...(fill && {
+      backgroundColor: theme.stepper.completed,
+    }),
+    ...(first && {
+      display: 'none',
+    }),
+  }
+})
 
-function StepperIcon({ active, completed, isNext, icon }) {
-  console.log(active, completed, icon)
+function StepperIcon({ active, completed, isNext, done, icon }) {
   const Icon = icon
   return (
-    <StepIconContainer ownerState={{ completed, active, isNext }}>
-      <Icon />
-    </StepIconContainer>
+    <StepIconContainerShadow state={{ active }}>
+      <StepIconContainer ownerState={{ completed, active, isNext, done }}>
+        <Icon />
+      </StepIconContainer>
+    </StepIconContainerShadow>
   )
 }
 
@@ -180,6 +206,7 @@ StepperIcon.propTypes = {
   active: PropTypes.bool,
   completed: PropTypes.bool,
   isNext: PropTypes.bool,
+  done: PropTypes.bool,
   icon: PropTypes.node,
 }
 
@@ -249,17 +276,24 @@ function HomePageStepper() {
         activeStep={activeStep}
         connector={<StepperConnector />}
       >
-        {steps.map(
-          (
-            { label, description, icon, location, buttonVerb, completed },
-            index
-          ) => (
-            <Step key={label}>
+        {steps.map(({ label, icon, completed }, index) => (
+          <StepContext.Provider
+            value={{
+              fill: index < nextIndex,
+              first: index === 0,
+              isNext: index === nextIndex,
+            }}
+            key={label}
+          >
+            <Step
+              key={label}
+              completed={completed}
+              active={activeStep === index}
+            >
               <StepLabel
                 StepIconProps={{
-                  active: activeStep === index,
-                  completed,
                   isNext: index === nextIndex,
+                  done: nextIndex > index,
                   icon,
                 }}
                 StepIconComponent={StepperIcon}
@@ -270,8 +304,8 @@ function HomePageStepper() {
                 {label}
               </StepLabel>
             </Step>
-          )
-        )}
+          </StepContext.Provider>
+        ))}
       </Stepper>
       <Box align="center" sx={{ mt: 4, mb: 2 }}>
         <Typography

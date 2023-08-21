@@ -2,6 +2,7 @@
 import { LongPressEventType, useLongPress } from 'use-long-press'
 import React from 'react'
 import PropTypes from 'prop-types'
+import { keyframes } from '@mui/system'
 
 const pattern = [
   'ArrowUp',
@@ -120,3 +121,15 @@ touchInputHandler.propTypes = {
   longPressCallback: PropTypes.func,
   clickCallback: PropTypes.func,
 }
+
+export const pulseAnim = keyframes`
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.175);
+  }
+  100% {
+    transform: scale(1);
+  }
+`

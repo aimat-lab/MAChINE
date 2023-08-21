@@ -134,11 +134,8 @@ export const themeDark = createTheme(
       mascot: '/molele-dark.svg',
     },
     stepper: {
-      start: '#b93170',
-      mid: '#c93278',
-      end: '#dc3984',
       active: '#b92e73',
-      completed: '#144a60',
+      completed: '#7e4760',
     },
     darkMode: true,
   })
