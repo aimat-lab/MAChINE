@@ -6,6 +6,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import ServerStatusButton from './ServerStatusButton'
 import ProgressBar from '../training/ProgressBar'
 import UserContext from '../../context/UserContext'
+import HelpContext from '../../context/HelpContext'
 import TrainingContext from '../../context/TrainingContext'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../logo.svg'
@@ -46,6 +47,7 @@ export default function Navbar({ logoutFunction, darkModeButton }) {
   const locationName = useLocation().pathname
   const user = React.useContext(UserContext)
   const training = React.useContext(TrainingContext)
+  const help = React.useContext(HelpContext)
   const [hideTraining, setHideTraining] = React.useState(true)
   const navigate = useNavigate()
 
@@ -136,6 +138,7 @@ export default function Navbar({ logoutFunction, darkModeButton }) {
               onClick={() => {
                 logoutFunction()
                 training.resetContext()
+                help.resetContext()
               }}
             >
               <IconButton sx={{ color: 'white' }}>

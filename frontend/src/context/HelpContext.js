@@ -28,6 +28,15 @@ export const HelpProvider = ({ children }) => {
   const [madeAnalysis, setMadeAnalysis] = React.useState(false)
   const [madeComparisons, setMadeComparisons] = React.useState(false)
 
+  function resetContext() {
+    setHelpMode(false)
+    setMadeModel(false)
+    setMadeFitting(false)
+    setMadeMolecule(false)
+    setMadeAnalysis(false)
+    setMadeComparisons(false)
+  }
+
   return (
     <HelpContext.Provider
       value={{
@@ -43,6 +52,7 @@ export const HelpProvider = ({ children }) => {
         setMadeAnalysis,
         madeComparisons,
         setMadeComparisons,
+        resetContext,
       }}
     >
       {children}
