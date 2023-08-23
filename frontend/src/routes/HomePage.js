@@ -208,7 +208,7 @@ StepperIcon.propTypes = {
   completed: PropTypes.bool,
   isNext: PropTypes.bool,
   done: PropTypes.bool,
-  icon: PropTypes.node,
+  icon: PropTypes.any,
 }
 
 function HomePageStepper() {
@@ -299,7 +299,6 @@ function HomePageStepper() {
                 }}
                 StepIconComponent={StepperIcon}
                 color="theme.palette.primary.main"
-                icon={icon}
                 onClick={() => setActiveStep(index)}
               >
                 {label}
