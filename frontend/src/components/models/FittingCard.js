@@ -53,6 +53,13 @@ export default function FittingCard({
               <Typography variant="subtitle1" component="h4">
                 Accuracy (R²): {fitting.accuracy}%
               </Typography>
+              <Typography variant="subtitle1" component="h4">
+                {fitting.labels.length > 1 ? `Labels:` : `Label:`}{' '}
+                {fitting.labels.map(
+                  (label, index) =>
+                    label + (index < fitting.labels.length - 1 ? ', ' : '')
+                )}
+              </Typography>
             </Box>
           </CardContent>
         </CardActionArea>
