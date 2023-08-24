@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardActionArea,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -14,6 +15,7 @@ import {
   Zoom,
 } from '@mui/material'
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined'
+import CircularProgress from '@mui/material/CircularProgress'
 import api from '../api'
 import FittingCard from '../components/models/FittingCard'
 import Histogram from '../components/datasets/Histogram'
@@ -54,6 +56,7 @@ export default function FittingsPage() {
   }, [user, training.trainingStatus])
 
   async function handleFittingSelection(fitting) {
+    setOpenDialog(true)
     return api.analyzeMolecule(fitting.id, selectedSmiles).then((response) => {
       help.setMadeAnalysis(true)
       return fetchHistograms(fitting, response)
@@ -107,6 +110,9 @@ export default function FittingsPage() {
   }
 
   const handleCloseDialog = () => {
+    setChartData({ empty: [] })
+    setAnalysis({})
+    setHighlightedIndices({ empty: -1 })
     setOpenDialog(false)
   }
 
@@ -194,30 +200,40 @@ export default function FittingsPage() {
             maxWidth="md"
           >
             <DialogTitle id="alert-dialog-title">
-              {'You successfully analyzed your molecule!'}
+              {highlightedIndices.empty !== -1
+                ? 'You successfully analyzed your molecule!'
+                : 'Analyzing your molecule...'}
             </DialogTitle>
-            <DialogContent>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  margin: 'auto',
-                  width: '90%',
-                }}
-              >
-                {Object.entries(chartData).map(([label, data], index) => {
-                  return (
-                    <Histogram
-                      data={data}
-                      highlightedIndex={highlightedIndices[label]}
-                      title={`${camelToNaturalString(label)}: ${
-                        analysis[label]
-                      }`}
-                      key={index}
-                    />
-                  )
-                })}
-              </Box>
+            <DialogContent sx={{ textAlign: 'center' }}>
+              <Collapse in={highlightedIndices.empty !== -1}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    margin: 'auto',
+                    width: '90%',
+                  }}
+                >
+                  {Object.entries(chartData).map(([label, data], index) => {
+                    return (
+                      <Histogram
+                        data={data}
+                        highlightedIndex={highlightedIndices[label]}
+                        title={`${camelToNaturalString(label)}: ${
+                          analysis[label]
+                        }`}
+                        key={index}
+                      />
+                    )
+                  })}
+                </Box>
+              </Collapse>
+              <Collapse in={highlightedIndices.empty === -1}>
+                <CircularProgress
+                  fontSize="large"
+                  sx={{ alignSelf: 'center' }}
+                />
+              </Collapse>
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseDialog}>Back</Button>

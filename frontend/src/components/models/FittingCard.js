@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import PropTypes from 'prop-types'
+import { camelToNaturalString } from '../../utils'
 
 /**
  * Card displaying information for given fitting
@@ -41,6 +42,18 @@ export default function FittingCard({
               subheader={`Trained Model ID: ${fitting.id}`}
             />
             <Box paddingX={2}>
+              <Typography
+                variant="subtitle1"
+                component="h4"
+                sx={{ fontWeight: 'bold' }}
+              >
+                {fitting.labels.length > 1 ? `Labels:` : `Label:`}{' '}
+                {fitting.labels.map(
+                  (label, index) =>
+                    camelToNaturalString(label) +
+                    (index < fitting.labels.length - 1 ? ', ' : '')
+                )}
+              </Typography>
               <Typography variant="subtitle1" component="h4">
                 Dataset: {fitting.datasetName} #{fitting.datasetID}
               </Typography>
@@ -52,13 +65,6 @@ export default function FittingCard({
               </Typography>
               <Typography variant="subtitle1" component="h4">
                 Accuracy (R²): {fitting.accuracy}%
-              </Typography>
-              <Typography variant="subtitle1" component="h4">
-                {fitting.labels.length > 1 ? `Labels:` : `Label:`}{' '}
-                {fitting.labels.map(
-                  (label, index) =>
-                    label + (index < fitting.labels.length - 1 ? ', ' : '')
-                )}
               </Typography>
             </Box>
           </CardContent>
