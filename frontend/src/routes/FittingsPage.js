@@ -47,7 +47,7 @@ export default function FittingsPage() {
   const user = React.useContext(UserContext)
   const training = React.useContext(TrainingContext)
   const { state } = useLocation()
-  const { selectedSmiles } = state
+  const selectedSmiles = state?.selectedSmiles
   const theme = useTheme()
   const navigate = useNavigate()
 
