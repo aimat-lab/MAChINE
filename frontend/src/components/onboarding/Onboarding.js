@@ -36,18 +36,29 @@ export default function Onboarding({ run, callback }) {
       ) {
         setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1))
       }
-      // If the step requires a certain location, navigate to it
-      if (steps[index].location) {
-        navigate(
-          steps[stepIndex].location,
-          steps[stepIndex].params ? steps[stepIndex].params : {}
-        )
-      }
     }
     // Advance (or go back) to the next step
     // Also do this if the target is not found, so the tour can continue
     if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
-      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1))
+      const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1)
+      setStepIndex(nextIndex)
+      // If the step requires a certain location, navigate to it
+      // Using nextIndex because setStepIndex is async
+      if (EVENTS.STEP_AFTER === type) {
+        if (steps[nextIndex]?.location) {
+          navigate(
+            steps[nextIndex].location,
+            steps[nextIndex].params ? steps[nextIndex].params : {}
+          )
+        }
+      }
+    }
+
+    if (ACTIONS.CLOSE === action || ACTIONS.SKIP === action) {
+      console.log('Onboarding closed')
+      if (steps[index].closeLocation) {
+        navigate(steps[index].closeLocation)
+      }
     }
 
     // Call external callback
@@ -470,7 +481,7 @@ export default function Onboarding({ run, callback }) {
     {
       // Models page step
       location: '/models',
-      target: 'body',
+      target: '.selection-list',
       content: (
         <div>
           <h2>Configure</h2>
@@ -482,11 +493,13 @@ export default function Onboarding({ run, callback }) {
           you&apos;ll be led to the next step.
         </div>
       ),
+      placement: 'right',
     },
     {
       // Model creation step
       location: '/models/base-models',
       target: 'body',
+      placement: 'center',
       content: (
         <div>
           <h2>Configure</h2>
@@ -507,7 +520,7 @@ export default function Onboarding({ run, callback }) {
     {
       // Model page training step
       location: '/models',
-      target: 'body',
+      target: '.select-training-data',
       content: (
         <div>
           <h2>Training</h2>
@@ -515,10 +528,13 @@ export default function Onboarding({ run, callback }) {
           select a dataset to train your model on.
         </div>
       ),
+      placement: 'top',
     },
     {
       // Dataset selection step
       location: '/datasets',
+      closeLocation: '/models',
+      placement: 'center',
       target: 'body',
       content: (
         <div>
@@ -538,7 +554,8 @@ export default function Onboarding({ run, callback }) {
     {
       // Training step
       location: '/training',
-      target: 'body',
+      closeLocation: '/models',
+      target: '.training-overview-parameters',
       content: (
         <div>
           <h2>Training</h2>
@@ -552,6 +569,7 @@ export default function Onboarding({ run, callback }) {
           and...
         </div>
       ),
+      placement: 'right',
     },
     {
       // Training graph step
@@ -562,7 +580,7 @@ export default function Onboarding({ run, callback }) {
           This neat little graph shows you how your model is doing. <br />
           Even if you&apos;re not deep into machine learning, <br />
           you can still look at all the pretty colors! <br />A small hint for
-          later: <em>Getting your Accuracy close to 1 is good!</em>
+          later: <em>Getting your R-Squared close to 1 is good!</em>
           <br /> <br />
           You can either stay here and watch the graph while your model trains,{' '}
           <br />
@@ -571,13 +589,13 @@ export default function Onboarding({ run, callback }) {
       ),
       offset: 2,
       target: '.apexcharts-canvas',
-
       placement: 'left',
+      closeLocation: '/models',
     },
     {
       // Molecule creation step
       location: '/molecules',
-      target: 'body',
+      target: '.selection-list',
       content: (
         <div>
           <h2>Draw</h2>
@@ -599,10 +617,12 @@ export default function Onboarding({ run, callback }) {
           clicking on the &quot;Analyze&quot; button (after saving).
         </div>
       ),
+      placement: 'right',
     },
     {
       // Molecule analysis step
       location: '/trained-models',
+      closeLocation: '/molecules',
       target: 'body',
       content: (
         <div>
@@ -621,11 +641,13 @@ export default function Onboarding({ run, callback }) {
           rather boring right now.
         </div>
       ),
+      placement: 'center',
     },
     {
       // Comparison step
       location: '/results',
       target: 'body',
+      placement: 'center',
       content: (
         <div>
           <h2>Compare</h2>

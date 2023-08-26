@@ -75,6 +75,7 @@ export default function SelectionList({
 
   return (
     <Card
+      className="selection-list"
       sx={{
         height,
         maxHeight: height,

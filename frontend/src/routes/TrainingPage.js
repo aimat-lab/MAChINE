@@ -141,7 +141,7 @@ export default function TrainingPage() {
 
   return (
     <Grid container>
-      <Grid item xs={6}>
+      <Grid item xs={6} className="training-overview-parameters">
         <Grid item sx={{ display: 'flex' }}>
           <TrainingParameterFields
             helpOpen={handleHelpPopperOpen}
