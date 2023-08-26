@@ -36,6 +36,7 @@ import { pulseAnim } from '../utils'
  */
 export default function HomePage({ startOnboarding }) {
   const theme = useTheme()
+  const help = React.useContext(HelpContext)
   return (
     <Box sx={{ align: 'center', px: '10%' }}>
       <Box
@@ -67,6 +68,7 @@ export default function HomePage({ startOnboarding }) {
                 textTransform: 'none',
               }}
               onClick={() => {
+                help.setHelpMode(true)
                 startOnboarding()
               }}
             >
