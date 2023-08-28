@@ -1,5 +1,12 @@
 import React from 'react'
-import { Button, Card, CardActions, CardContent, useTheme } from '@mui/material'
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  useTheme,
+} from '@mui/material'
 import PropTypes from 'prop-types'
 
 export default function OnboardingTooltip({
@@ -65,8 +72,14 @@ export default function OnboardingTooltip({
           {...skipProps}
           sx={{ mr: 'auto !important' }}
         >
-          Cancel
+          Quit
         </Button>
+        <Box sx={{ flexGrow: 1 }}></Box>
+        {index > 0 ? (
+          <Button color="primary" variant="text" {...backProps}>
+            Back
+          </Button>
+        ) : null}
         <Button color="primary" variant="text" {...primaryProps}>
           Next{index === 0 ? ' (ENTER)' : ''}
         </Button>

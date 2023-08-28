@@ -79,7 +79,7 @@ export default function TrainingParameterFields({
   }
 
   return (
-    <Box display="flex" flexDirection="row">
+    <Box display="flex" flexDirection="row" className="training-parameters">
       <TextField
         sx={{ mx: 3, mt: 3, flexGrow: 1 }}
         required

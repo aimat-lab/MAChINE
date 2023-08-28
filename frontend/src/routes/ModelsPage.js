@@ -226,7 +226,7 @@ function ModelDescription({
             onMouseOver={(e) => {
               hoverFunc(
                 e,
-                "Here you see all relevant information of your model.\nOn the top, you can see the model's name, as well as which base model was used to create it.\nSince you can train every model multiple times, you can see all of its trained models listed below.\nTo start a new training with your selected model, simply click on 'Select training data'!"
+                "Here you see all relevant information of your model.\nOn the top, you can see the model's name, as well as which base model was used to create it.\nSince you can train every model multiple times, you can see all of its trained models listed below.\nTo start a new training with your selected model, simply click on 'Train Model'!"
               )
             }}
             onMouseLeave={leaveFunc}
@@ -300,7 +300,7 @@ function ModelDescription({
                       : 'none',
                 }}
               >
-                Select Training Data
+                Train Model
               </Button>
             </Grid>
           </CardActions>

@@ -3,7 +3,7 @@ import { useTheme } from '@mui/material'
 import UserContext from '../../context/UserContext'
 import TrainingContext from '../../context/TrainingContext'
 import Joyride, { ACTIONS, EVENTS } from 'react-joyride'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import OnboardingTooltip from './OnboardingTooltip'
 
@@ -11,7 +11,6 @@ export default function Onboarding({ run, callback }) {
   const user = React.useContext(UserContext)
   const theme = useTheme()
   const navigate = useNavigate()
-  const locationName = useLocation().pathname
   const [stepIndex, setStepIndex] = React.useState(0)
   const training = React.useContext(TrainingContext)
 
@@ -28,15 +27,7 @@ export default function Onboarding({ run, callback }) {
       // Select example training parameters, so the training page can be shown during tour
       training.selectExampleTrainingParameters()
     }
-    // Skip the step if it's skipLocation matches the current location
-    if (EVENTS.STEP_BEFORE === type) {
-      if (
-        steps[index].skipLocations &&
-        steps[index].skipLocations.includes(locationName)
-      ) {
-        setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1))
-      }
-    }
+
     // Advance (or go back) to the next step
     // Also do this if the target is not found, so the tour can continue
     if ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND].includes(type)) {
@@ -55,7 +46,6 @@ export default function Onboarding({ run, callback }) {
     }
 
     if (ACTIONS.CLOSE === action || ACTIONS.SKIP === action) {
-      console.log('Onboarding closed')
       if (steps[index].closeLocation) {
         navigate(steps[index].closeLocation)
       }
@@ -78,8 +68,10 @@ export default function Onboarding({ run, callback }) {
             Hi {user.userName}! Welcome to{' '}
             <span style={{ color: theme.palette.primary.main }}>MAChINE</span>!
           </h2>
-          This tour will guide you through the most important features of the
-          app.
+          This tour will guide you through the process of creating and training
+          your own machine learning models.
+          <br />
+          You&apos;ll get to use them to analyze molecules you will have drawn.
         </div>
       ),
       placement: 'center',
@@ -98,11 +90,10 @@ export default function Onboarding({ run, callback }) {
             !
           </h2>
           Help mode shows you hints on parameters and panels when you hover over
-          them, <br />
-          it might shed a light on some of the more technical aspects of
-          MAChINE. <br />
-          Help mode has been turned on by this tour, but you can always toggle
-          it by using this button.
+          them.
+          <br />
+          It has been turned on for now, but you can always toggle it by using
+          this button.
         </div>
       ),
     },
@@ -110,7 +101,7 @@ export default function Onboarding({ run, callback }) {
       // Stepper step
       location: '/home',
       target: '.MuiStepper-root',
-      offset: 5,
+      offset: -2,
       placement: 'left',
       content: (
         <div>
@@ -122,7 +113,7 @@ export default function Onboarding({ run, callback }) {
           </h2>
           The stepper shows you what you&apos;ve already achieved with our app!
           <br />
-          It also gives you handy suggestions on what steps to do next.
+          It also gives you handy suggestions on what to do next.
           <br />
           Let&apos;s go through all the steps together!
         </div>
@@ -131,7 +122,6 @@ export default function Onboarding({ run, callback }) {
     {
       // Models page step
       location: '/models',
-      target: '.selection-list',
       content: (
         <div>
           <h2>Configure</h2>
@@ -139,73 +129,31 @@ export default function Onboarding({ run, callback }) {
           <span style={{ color: theme.palette.primary.main }}>models page</span>
           !<br />
           Here you can see all the models you have created so far. <br />
-          To create a model, simply click on &quot;Add a model&quot; and
-          you&apos;ll be led to the next step.
+          To create a model, simply click on &quot;Add a model&quot;.
         </div>
       ),
+      target: '.selection-list',
       placement: 'right',
-    },
-    {
-      // Model creation step
-      location: '/models/base-models',
-      target: 'body',
-      placement: 'center',
-      content: (
-        <div>
-          <h2>Configure</h2>
-          This is the{' '}
-          <span style={{ color: theme.palette.primary.main }}>
-            Base model page
-          </span>{' '}
-          !<br />
-          Here you can see all the base models you can select from. <br />
-          Base models are the building blocks of your model, they define the
-          type and parameters you can customize. <br />
-          Click on the base model you want to use and you&apos;ll be redirected
-          to its configuration page. <br />
-          But let&apos;s skip that for now and go straight to the next step!
-        </div>
-      ),
     },
     {
       // Model page training step
       location: '/models',
-      target: '.select-training-data',
       content: (
         <div>
           <h2>Training</h2>
-          Back on the models page, click on &quot;Select Training Data&quot; to
-          select a dataset to train your model on.
+          Once you&apos;ve configured your model, click on &quot;Train
+          Model&quot; <br />
+          to select a dataset and configure the model&apos;s training process.
         </div>
       ),
+      target: '.select-training-data',
       placement: 'top',
     },
     {
-      // Dataset selection step
-      location: '/datasets',
-      closeLocation: '/models',
-      placement: 'center',
-      target: 'body',
-      content: (
-        <div>
-          <h2>Training</h2>
-          This is the{' '}
-          <span style={{ color: theme.palette.primary.main }}>
-            {' '}
-            dataset selection page
-          </span>
-          ! <br />
-          Here you can see all the datasets available to you. <br />
-          Click on a dataset, select a label that sounds interesting and you can
-          start training! <br />
-        </div>
-      ),
-    },
-    {
-      // Training step
+      // Training parameters step
       location: '/training',
       closeLocation: '/models',
-      target: '.training-overview-parameters',
+      target: '.training-parameters',
       content: (
         <div>
           <h2>Training</h2>
@@ -214,33 +162,29 @@ export default function Onboarding({ run, callback }) {
             training page
           </span>
           !<br />
-          Here you have an overview of your model, the dataset you selected{' '}
-          <br />
-          and...
+          Here you can configure some final training parameters and...
         </div>
       ),
-      placement: 'right',
+      placement: 'bottom',
     },
     {
       // Training graph step
+      location: '/training',
+      closeLocation: '/models',
       content: (
         <div>
           <h2>Training</h2>
-          <h4>...the training process!</h4>
-          This neat little graph shows you how your model is doing. <br />
-          Even if you&apos;re not deep into machine learning, <br />
-          you can still look at all the pretty colors! <br />A small hint for
-          later: <em>Getting your R-Squared close to 1 is good!</em>
+          <h4>...track your training progress!</h4>
+          If you&apos;re new to machine learning, here&apos;s a little hint:
+          <br /> <em>An R-Squared value close to 1 is good!</em>
           <br /> <br />
-          You can either stay here and watch the graph while your model trains,{' '}
-          <br />
-          or you can do something else and come back later.
+          Training can take a while, so feel free to continue with <br />
+          something else in the meantime.
         </div>
       ),
       offset: 2,
       target: '.apexcharts-canvas',
       placement: 'left',
-      closeLocation: '/models',
     },
     {
       // Molecule creation step
@@ -249,22 +193,17 @@ export default function Onboarding({ run, callback }) {
       content: (
         <div>
           <h2>Draw</h2>
-          Here&apos;s a suggestion for something else you can do:
-          <br />
-          Draw your own molecules! (And look at their 3D structure, too)
-          <br />
           This is the{' '}
           <span style={{ color: theme.palette.primary.main }}>
             molecule creation page
           </span>
           !<br /> Click on &quot;Add a molecule&quot; to get a blank canvas, or
-          click on a molecule in the list to edit it. <br />
-          Just make sure to save it! You wouldn&apos;t want to lose your work,
-          would you?
+          select a molecule in the list to edit it. <br />
+          Just make sure to save it!
           <br />
           <br />
-          Once you&apos;re happy with you molecule, you can analyze it by
-          clicking on the &quot;Analyze&quot; button (after saving).
+          After saving your changes, learn about your molecule&apos;s properties
+          by clicking on the &quot;Analyze&quot; button.
         </div>
       ),
       placement: 'right',
@@ -284,11 +223,7 @@ export default function Onboarding({ run, callback }) {
           !
           <br />
           Here you can see all the models you have trained so far. <br />
-          Click on a model to analyze your molecule from the previous step!
-          <br />
-          <br />
-          Since you probably haven&apos;t trained any models yet, this page is
-          rather boring right now.
+          Choose one to analyze your molecule from the previous step!
         </div>
       ),
       placement: 'center',
@@ -307,9 +242,21 @@ export default function Onboarding({ run, callback }) {
             Scoreboard page
           </span>
           !<br />
-          Here you can see models other users have trained and compare them to
-          your own. <br />
-          You can also compare molecules, to see which one is the best! <br />
+          Here you can compare other user&apos;s models and molecules to your
+          own. <br />
+        </div>
+      ),
+    },
+    {
+      // End step
+      location: '/home',
+      target: 'body',
+      placement: 'center',
+      content: (
+        <div>
+          <h2>That&apos;s it!</h2>
+          Feel free to explore the rest of the app and start creating your own
+          models and molecules!
         </div>
       ),
     },
