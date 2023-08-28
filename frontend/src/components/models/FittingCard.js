@@ -7,6 +7,7 @@ import {
   CardHeader,
   Grid,
   Typography,
+  useTheme,
 } from '@mui/material'
 import PropTypes from 'prop-types'
 import { camelToNaturalString } from '../../utils'
@@ -25,6 +26,7 @@ export default function FittingCard({
   hoverFunc,
   leaveFunc,
 }) {
+  const theme = useTheme()
   return (
     <Grid item xs={4} md={3}>
       <Card>
@@ -38,8 +40,12 @@ export default function FittingCard({
           <CardContent>
             <CardHeader
               sx={{ p: 1, pl: 2 }}
-              title={fitting.modelName}
-              subheader={`Trained Model ID: ${fitting.id}`}
+              title={
+                <span style={{ color: theme.palette.primary.main }}>
+                  {fitting.modelName}
+                </span>
+              }
+              subheader={`ID: ${fitting.id}`}
             />
             <Box paddingX={2}>
               <Typography
