@@ -16,7 +16,6 @@ import { useNavigate } from 'react-router-dom'
 
 /**
  * @description Shadow for the StepIconContainer. Required because css drop-shadows don't work directly on clipPath divs
- * @type {StyledComponent<MUIStyledCommonProps<Theme>, JSX.IntrinsicElements[string], {}>}
  */
 const StepIconContainerShadow = styled('div')(({ theme, state }) => ({
   zIndex: 2,
@@ -30,7 +29,6 @@ const StepIconContainerShadow = styled('div')(({ theme, state }) => ({
 /**
  * @description Hex-shaped container for the step icon.
  * Color depends on the state of the step.
- * @type {StyledComponent<MUIStyledCommonProps<Theme>, JSX.IntrinsicElements[string], {}>}
  */
 const StepIconContainer = styled('div')(({ theme, ownerState }) => ({
   backgroundColor:
@@ -68,7 +66,6 @@ const StepContext = React.createContext({
 
 /**
  * @description styledComponent for the stepper connector line
- * @type {StyledComponent<PropsOf<(props: StepConnectorProps) => JSX.Element> & MUIStyledCommonProps<Theme>, {}, {}>}
  */
 const StepperConnector = styled(StepConnector)(({ theme }) => {
   const { fill, first, isNext } = React.useContext(StepContext)
