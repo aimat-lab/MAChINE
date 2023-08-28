@@ -8,9 +8,6 @@ export const themeBase = {
     connected: {
       main: '#6dcd00',
     },
-    continue: {
-      main: '#6dcd00',
-    },
   },
   components: {
     MuiDataGrid: {
@@ -52,9 +49,6 @@ export const themeLight = createTheme(
       contrastbackground: {
         main: '#137C83',
       },
-      continue: {
-        main: '#68C1C7',
-      },
     },
     components: {
       MuiCard: {
@@ -80,9 +74,6 @@ export const themeLight = createTheme(
       mascot: '/molele.svg',
     },
     stepper: {
-      start: '#137C83',
-      mid: '#157f85',
-      end: '#1d8b93',
       active: '#4db1b6',
       completed: '#68C1C7',
     },
@@ -97,10 +88,6 @@ export const themeDark = createTheme(
       primary: {
         main: '#dc3984',
         overlay: '#7E2E54',
-      },
-      continue: {
-        main: '#4f9f88',
-        alt: '#f27121',
       },
       mode: 'dark',
     },
