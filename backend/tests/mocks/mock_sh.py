@@ -1,7 +1,9 @@
 class MockSH:
-    def __init__(self, models=None, fittings=None):
+    def __init__(self, models=None, fittings=None, working_delete=True):
         self.model_summaries = models
         self.fitting_summaries = fittings
+        self.deleted = False
+        self.working_delete = working_delete
 
         if models is None:
             self.model_summaries = {}
@@ -20,17 +22,10 @@ class MockSH:
     def get_fitting_summary(self, user_id, fitting_id):
         return self.fitting_summaries.get(fitting_id)
 
-
-class MockUserDelSH:
-
-    def __init__(self, delete_handler=True):
-        self.deleted = False
-        self.delete_handler = delete_handler
-
     def get_user_handler(self, user_id):
         if self.deleted:
             return None
-        return {'Handler is not None, so this counts'}
+        return {'this': 'works'}
 
     def delete_user_handler(self, user_id):
-        self.deleted = self.delete_handler
+        self.deleted = self.working_delete

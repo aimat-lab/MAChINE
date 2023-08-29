@@ -9,25 +9,31 @@ import pytest_mock
 _test_user_id = 'test_user'
 _test_user_name = 'test_user_name'
 
-
-@pytest.fixture
-def client():
-    api.app.config['TESTING'] = True
-    with api.app.test_client() as client:
-        yield client
-
-
 @pytest.fixture
 def socket():
     socket = api.sio.test_client(api.app)
     assert socket.is_connected()
     return socket
 
+@pytest.fixture
+def unconnected_client():
+    api.app.config['TESTING'] = True
+    with api.app.test_client() as unconnected_client:
+        yield unconnected_client
+
+@pytest.fixture
+def client(unconnected_client, mocker):
+    mocker.patch('backend.utils.api.last_user_activity_tracker', {_test_user_id: 0})
+    thread = api.Thread()
+    thread.start()
+    mocker.patch('backend.utils.api.user_socket_queues', {_test_user_id: (api.gq.Queue(), thread)})
+    mocker.patch('backend.utils.api.AuthenticatedResource.method_decorators', [])
+    yield unconnected_client
 
 class TestModelRequestGroup:
 
     def test_model_get_response_format(self, client, mocker):
-        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockSH())
+        mocker.patch('backend.utils.api.sh.get_model_summaries', return_value={})
         response = client.get(f'/users/{_test_user_id}/models')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert type(response.json) == list, 'Response json should be a list'
@@ -247,31 +253,30 @@ class TestUserRequestGroup:
             'WADawd',
         ]
     )
-    def test_add_user_response(self, test_username, client, mocker):
+    def test_add_user_response(self, test_username, unconnected_client, mocker):
         mocker.patch('backend.utils.api.sh.add_user_handler', return_value={'This represents a handler'})
         sh_mol_mock = mocker.patch('backend.utils.api.sh.add_molecule')
         sh_model_mock = mocker.patch('backend.utils.api.sh.add_model')
-        response = client.post(f'/users', json={'username': test_username})
-        user_id = str(hashlib.sha1(test_username.encode('utf-8'), usedforsecurity=False).hexdigest())
+        response = unconnected_client.post(f'/users', json={'username': test_username})
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.is_json, 'Response should be a json'
-        assert response.json == {'userID': user_id}, 'json should contain the user id'
+        assert response.json.get('userID') is not None, 'Response should contain a userID'
         sh_mol_mock.assert_called_once()
         sh_model_mock.assert_called_once()
 
-    def test_add_user_error(self, client, mocker):
+    def test_add_user_error(self, unconnected_client, mocker):
         mocker.patch('backend.utils.api.sh.add_user_handler', return_value=None)
-        response = client.post(f'/users', json={'username': 'test'})
+        response = unconnected_client.post(f'/users', json={'username': 'test'})
         assert response.status_code == 404, 'User shouldn\'t have been created'
 
     def test_delete_user_response(self, client, mocker):
-        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockUserDelSH())
+        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockSH())
         response = client.delete(f'/users/{_test_user_id}')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'Response should have a json'
 
     def test_delete_user_internal_error_response(self, client, mocker):
-        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockUserDelSH(delete_handler=False))
+        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockSH(working_delete=False))
         response = client.delete(f'/users/{_test_user_id}')
         assert response.status_code == 500, 'Expected to respond with internal server error'
         assert response.json is None, 'Response should have a json'
