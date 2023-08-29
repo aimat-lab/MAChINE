@@ -210,6 +210,18 @@ export default {
   },
 
   /**
+   * Requests to delete a fitting for a user
+   * @param fittingID {string} ID of the fitting to be deleted
+   * @returns {Promise<axios.AxiosResponse<any>>}
+   */
+  async deleteFitting(fittingID) {
+    return api
+      .delete(`/users/${userID}/fittings/${fittingID}`)
+      .then(() => {})
+      .catch(() => {})
+  },
+
+  /**
    * Requests the fitting list for the current user
    * @returns {Promise<AxiosResponse<*[]> | []>} Promise that returns the fitting list or an empty array on exception
    */
@@ -288,6 +300,17 @@ export default {
   },
 
   /**
+   * Requests to delete a model for the current user
+   * @param modelID {string} ID of the model to be deleted
+   */
+  async deleteModelConfig(modelID) {
+    return api
+      .delete(`/users/${userID}/models/${modelID}`)
+      .then(() => {})
+      .catch(() => {})
+  },
+
+  /**
    * Requests proper 3D coordinates for a specific SMILES string
    * @param smiles {Variant} SMILES string of the molecule
    * @returns {Promise<AxiosResponse<string> | null>} Promise that returns the 3D molecule cml string or null on exception
@@ -324,6 +347,16 @@ export default {
       .catch(() => {
         throw Error("Couldn't add molecule")
       })
+  },
+
+  /**
+   * Requests to delete a molecule for the current user
+   */
+  async deleteMolecule(smiles) {
+    return api
+      .delete(`/users/${userID}/molecules/${encodeURIComponent(btoa(smiles))}`)
+      .then(() => {})
+      .catch(() => {})
   },
 
   /**
