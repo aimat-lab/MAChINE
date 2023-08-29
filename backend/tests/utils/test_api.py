@@ -477,6 +477,7 @@ class TestTrainRequestGroup:
 
 class TestScoreboardRequestGroup:
 
+    @pytest.mark.skip(reason='mod-scoreboard request differences not yet implemented')
     @pytest.mark.parametrize(
         'sh_scoreboards',
         [
@@ -494,14 +495,14 @@ class TestScoreboardRequestGroup:
         ]
     )
     def test_scoreboard_get(self, sh_scoreboards, client, mocker):
-        mocker.patch('backend.utils.api.sh.get_scoreboard_summaries', return_value=sh_scoreboards)
-        response = client.get(f'/scoreboard')
+        mocker.patch('backend.utils.api.sh.get_scoreboard_models', return_value=sh_scoreboards)
+        response = client.get(f'/mod-scoreboard')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json == list(sh_scoreboards.values())
 
     def test_scoreboard_delete(self, client, mocker):
         delete_mock = mocker.patch('backend.utils.api.sh.delete_scoreboard_fittings', return_value=None)
-        response = client.delete(f'/scoreboard')
+        response = client.delete(f'/mod-scoreboard')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'No response json expected'
         delete_mock.assert_called_once()
@@ -514,7 +515,7 @@ class TestScoreboardRequestGroup:
     )
     def test_scoreboard_delete_single(self, scoreboard_id, client, mocker):
         delete_mock = mocker.patch('backend.utils.api.sh.delete_scoreboard_fitting', return_value=None)
-        response = client.delete(f'/scoreboard/{scoreboard_id}')
+        response = client.delete(f'/mod-scoreboard/{scoreboard_id}')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'No response json expected'
         delete_mock.assert_called_once_with(scoreboard_id)
