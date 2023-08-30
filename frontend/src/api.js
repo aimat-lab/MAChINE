@@ -181,7 +181,7 @@ export default {
 
   /**
    * Requests the model list for the current user
-   * @returns {Promise<AxiosResponse<*[]> | *[]>} Promise that returns the model list, or an empty array on exception
+   * @returns {Promise<AxiosResponse<ModelConfig[]> | []>} Promise that returns the model list, or an empty array on exception
    */
   async getModelList() {
     return api
@@ -196,7 +196,7 @@ export default {
 
   /**
    * Requests the molecule list for the current user
-   * @returns {Promise<AxiosResponse<*[]> | *[]>} Promise that returns the molecule list or an empty array on exception
+   * @returns {Promise<AxiosResponse<Molecule[]> | []>} Promise that returns the molecule list or an empty array on exception
    */
   async getMoleculeList() {
     return api
@@ -223,7 +223,7 @@ export default {
 
   /**
    * Requests the fitting list for the current user
-   * @returns {Promise<AxiosResponse<*[]> | []>} Promise that returns the fitting list or an empty array on exception
+   * @returns {Promise<AxiosResponse<Fitting[]> | []>} Promise that returns the fitting list or an empty array on exception
    */
   async getFittings() {
     return api
@@ -238,7 +238,7 @@ export default {
 
   /**
    * Requests the dataset summary list
-   * @returns {Promise<AxiosResponse<*[]> | []>} Promise that returns the dataset summary list or an empty array on exception
+   * @returns {Promise<AxiosResponse<Dataset[]> | []>} Promise that returns the dataset summary list or an empty array on exception
    */
   async getDatasets() {
     return api
@@ -270,7 +270,7 @@ export default {
 
   /**
    * Requests list of base models from server
-   * @returns {Promise<AxiosResponse<*[]> | []>} Promise that returns the base model list or an empty array on exception
+   * @returns {Promise<AxiosResponse<BaseModel[]> | []>} Promise that returns the base model list or an empty array on exception
    */
   async getBaseModels() {
     return api
@@ -433,16 +433,25 @@ export default {
    * @param modelID {string} ID of model to train
    * @param labels {array} List of labels to train on
    * @param epochs {number} Number of epochs to train for
+   * @param learningRate {number} Learning rate to train with
    * @param batchSize {number} Batch size to train with
    * @returns {Promise<AxiosResponse<boolean> | boolean>} Promise of a boolean indicating whether starting the training was successful
    */
-  async trainModel(datasetID, modelID, labels, epochs, batchSize) {
+  async trainModel(
+    datasetID,
+    modelID,
+    labels,
+    epochs,
+    learningRate,
+    batchSize
+  ) {
     return api
       .post(`/users/${userID}/train`, {
         datasetID,
         modelID,
         labels: JSON.stringify(labels),
         epochs,
+        learningRate,
         batchSize,
       })
       .then((response) => {

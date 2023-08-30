@@ -111,7 +111,7 @@ class UserDataStorageHandler:
 
     # Fittings
     # Saves a fitting, creates a summary, updates the model summary
-    def add_fitting(self, dataset_id, labels, epochs, accuracy, batch_size, model_id, fitting):
+    def add_fitting(self, dataset_id, labels, epochs, learning_rate, accuracy, batch_size, model_id, fitting):
         fitting_id = shortuuid.uuid()
         path = self.save_fitting(fitting_id, fitting)
         if path is None:
@@ -119,6 +119,7 @@ class UserDataStorageHandler:
         self.fitting_summaries[fitting_id] = {'datasetID': dataset_id,
                                               'labels': labels,
                                               'epochs': epochs,
+                                              'learningRate': learning_rate,
                                               'accuracy': accuracy,
                                               'batchSize': batch_size,
                                               'fittingPath': str(path),
@@ -310,8 +311,8 @@ class StorageHandler:
 
     # Fittings
     # fitting is the actual, trained model, not a summary
-    def add_fitting(self, user_id, dataset_id, labels, epochs, accuracy, batch_size, model_id, fitting):
-        fitting_id = self.get_user_handler(user_id).add_fitting(dataset_id, labels, epochs, accuracy, batch_size,
+    def add_fitting(self, user_id, dataset_id, labels, epochs, learning_rate, accuracy, batch_size, model_id, fitting):
+        fitting_id = self.get_user_handler(user_id).add_fitting(dataset_id, labels, epochs, learning_rate, accuracy, batch_size,
                                                                 model_id,
                                                                 fitting)
         # Creates the scoreboard fitting summary, if username isn't None
@@ -327,6 +328,7 @@ class StorageHandler:
                                                          'name'),
                                                      'labels': labels,
                                                      'epochs': epochs,
+                                                     'learningRate': learning_rate,
                                                      'batchSize': batch_size,
                                                      'accuracy': accuracy}
         self.__save_scoreboard_summaries()

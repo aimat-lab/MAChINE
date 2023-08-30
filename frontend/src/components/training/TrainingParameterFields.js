@@ -22,11 +22,12 @@ export default function TrainingParameterFields({
   const training = React.useContext(TrainingContext)
   const [epochsError, setEpochsError] = React.useState(false)
   const [batchSizeError, setBatchSizeError] = React.useState(false)
+  const [learningRateError, setLearningRateError] = React.useState(false)
   const initialMount = React.useRef(true)
 
   React.useEffect(() => {
-    errorCallback(epochsError || batchSizeError)
-  }, [epochsError, batchSizeError])
+    errorCallback(epochsError || batchSizeError || learningRateError)
+  }, [epochsError, batchSizeError, learningRateError])
 
   // check epochs on change
   React.useEffect(() => {
@@ -55,11 +56,32 @@ export default function TrainingParameterFields({
     }
   }, [training.selectedBatchSize])
 
+  React.useEffect(() => {
+    checkLearningRate(training.selectedLearningRate)
+    // this is important, don't remove!
+    if (initialMount.current) {
+      initialMount.current = false
+    } else {
+      training.setTrainingFinished(false)
+    }
+    return () => {
+      training.setTrainingFinished(false)
+    }
+  }, [training.selectedLearningRate])
+
   const checkBatchSize = (batchSize) => {
     if (batchSize > 0) {
       setBatchSizeError(false)
     } else {
       setBatchSizeError(true)
+    }
+  }
+
+  const checkLearningRate = (learningRate) => {
+    if (learningRate > 0 && learningRate < 5) {
+      setLearningRateError(false)
+    } else {
+      setLearningRateError(true)
     }
   }
 
@@ -74,6 +96,12 @@ export default function TrainingParameterFields({
       helpOpen(
         target,
         "The batch size determines how often the net's parameters are adjusted. The smaller the batch size, the more often that's the case!"
+      )
+    },
+    learningRate: (target) => {
+      helpOpen(
+        target,
+        'The learning rate determines how fast the net tries to learn. Too small and the net will never learn, too big and it will never settle on a decision!'
       )
     },
   }
@@ -92,6 +120,22 @@ export default function TrainingParameterFields({
         error={epochsError}
         helperText={epochsError ? 'Must be a number > 0!' : ' '}
         onMouseOver={(e) => hoverFuncs.epochs(e.currentTarget)}
+        onMouseLeave={helpClose}
+      />
+      <TextField
+        sx={{ mx: 3, mt: 3, flexGrow: 1 }}
+        required
+        id="learningrate"
+        label="Learning Rate"
+        type="number"
+        value={training.selectedLearningRate}
+        disabled={training.trainingStatus}
+        onChange={(event) => {
+          training.setSelectedLearningRate(event.target.value)
+        }}
+        error={learningRateError}
+        helperText={learningRateError ? 'Must be 5 > rate > 0!' : ' '}
+        onMouseOver={(e) => hoverFuncs.learningRate(e.currentTarget)}
         onMouseLeave={helpClose}
       />
       <TextField

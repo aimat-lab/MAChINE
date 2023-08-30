@@ -53,6 +53,7 @@ parser.add_argument('accuracy', type=float)  # Not used
 parser.add_argument('batchSize', type=int)
 parser.add_argument('baseModelID')
 parser.add_argument('parameters', type=dict)
+parser.add_argument('learningRate', type=float)
 
 
 def authenticate(func):
@@ -113,6 +114,7 @@ class Models(AuthenticatedResource):
                             'datasetName': dataset['name'],
                             'labels': fitting['labels'],
                             'epochs': fitting['epochs'],
+                            'learningRate': fitting['learningRate'],
                             'batchSize': fitting['batchSize'],
                             'accuracy': fitting['accuracy']
                         }
@@ -263,6 +265,7 @@ class Fittings(AuthenticatedResource):
                     'datasetName': current_dataset['name'],
                     'labels': current_fitting['labels'],
                     'epochs': current_fitting['epochs'],
+                    'learningRate': current_fitting['learningRate'],
                     'batchSize': current_fitting['batchSize'],
                     'accuracy': current_fitting['accuracy']
                 }
@@ -520,6 +523,7 @@ class Train(AuthenticatedResource):
                                   model_id=args['modelID'],
                                   labels=labels,
                                   epochs=args['epochs'],
+                                  learning_rate=args['learningRate'],
                                   batch_size=args['batchSize'])
         return True, 202
 
@@ -730,7 +734,7 @@ def run(debug=True):
                 'activation': 'relu',
             },
         ], 'lossFunction': 'Huber Loss', 'optimizer': 'Stochastic Gradient Descent'}, '1')
-        ml.train(test_user, '2', model_id, ['lumo', 'homo'], 7, 64)
+        ml.train(test_user, '2', model_id, ['lumo', 'homo'], 7, 0.2, 64)
         model_id_2 = sh.add_model(test_user, 'MyCoolSecondModel',
                                   {'lossFunction': 'Mean Squared Error', 'optimizer': 'Adam', 'embeddingDimension': 128,
                                    'readoutSize': 1,

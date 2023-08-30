@@ -73,6 +73,7 @@ export default function TrainingPage() {
           training.selectedModel.id,
           training.selectedLabels,
           localEpochs,
+          training.selectedLearningRate,
           training.selectedBatchSize
         )
         .then((response) => {
