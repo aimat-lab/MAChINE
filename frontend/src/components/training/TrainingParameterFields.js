@@ -101,15 +101,19 @@ export default function TrainingParameterFields({
     learningRate: (target) => {
       helpOpen(
         target,
-        'The learning rate determines how fast the net tries to learn. Too small and the net will never learn, too big and it will never settle on a decision!'
+        'The learning rate determines how fast the net tries to learn. Too small and the net will never learn, too big and it will never stop!'
       )
     },
   }
 
   return (
-    <Box display="flex" flexDirection="row" className="training-parameters">
+    <Box
+      sx={{ mt: 3, mx: 3 }}
+      display="flex"
+      flexDirection="row"
+      className="training-parameters"
+    >
       <TextField
-        sx={{ mx: 3, mt: 3, flexGrow: 1 }}
         required
         id="epochs"
         label="Epochs"
@@ -123,7 +127,7 @@ export default function TrainingParameterFields({
         onMouseLeave={helpClose}
       />
       <TextField
-        sx={{ mx: 3, mt: 3, flexGrow: 1 }}
+        sx={{ mx: 1 }}
         required
         id="learningrate"
         label="Learning Rate"
@@ -139,7 +143,6 @@ export default function TrainingParameterFields({
         onMouseLeave={helpClose}
       />
       <TextField
-        sx={{ mx: 3, mt: 3, flexGrow: 1 }}
         required
         id="batchsize"
         label="Batch Size"

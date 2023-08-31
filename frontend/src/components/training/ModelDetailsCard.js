@@ -26,7 +26,7 @@ export default function ModelDetailsCard({
 }) {
   return (
     <Card
-      sx={{ m: 3 }}
+      sx={{ m: 3, mt: 0 }}
       onMouseOver={(e) => {
         hoverFunc(e.currentTarget)
       }}

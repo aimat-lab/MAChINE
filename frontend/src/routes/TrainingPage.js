@@ -143,15 +143,13 @@ export default function TrainingPage() {
   return (
     <Grid container>
       <Grid item xs={6} className="training-overview-parameters">
-        <Grid item sx={{ display: 'flex' }}>
-          <TrainingParameterFields
-            helpOpen={handleHelpPopperOpen}
-            helpClose={handleHelpPopperClose}
-            epochs={localEpochs}
-            setEpochs={setLocalEpochs}
-            errorCallback={setParameterError}
-          />
-        </Grid>
+        <TrainingParameterFields
+          helpOpen={handleHelpPopperOpen}
+          helpClose={handleHelpPopperClose}
+          epochs={localEpochs}
+          setEpochs={setLocalEpochs}
+          errorCallback={setParameterError}
+        />
 
         <ModelDetailsCard
           selectedModel={training.selectedModel}
