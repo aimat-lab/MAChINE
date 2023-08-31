@@ -21,14 +21,14 @@ def fix_seeds():
 def test_training_start(mocker):
     mocker.patch('backend.machine_learning.ml_functions.is_training_running', return_value=False)
     mocker.patch('backend.machine_learning.ml_functions.Training')
-    status = ml.train('', '', '', '', '', '')
+    status = ml.train('', '', '', '', '', '','')
     assert status, 'ml.train should have "succeeded"'
 
 
 def test_training_start_running(mocker):
     mocker.patch('backend.machine_learning.ml_functions.is_training_running', return_value=True)
     mocker.patch('backend.machine_learning.ml_functions.Training')
-    status = ml.train('', '', '', '', '', '')
+    status = ml.train('', '', '', '', '', '','')
     assert not status, 'ml.train should have "failed"'
 
 
@@ -106,13 +106,13 @@ class TestLiveStatsGroup:
         mocked_api.assert_called_once_with(user_id, epochs), 'api is to be called once to confirm training start'
 
     @pytest.mark.parametrize(
-        'user_id, dataset_id, model_id, batch_size, labels, model, initial_epoch, fitting_id, epochs, accuracy, epochs_trained',
+        'user_id, dataset_id, model_id, batch_size, labels, model, initial_epoch, fitting_id, epochs, accuracy, epochs_trained, learning_rate',
         [
-            ('112515', 'testID', '34567890', 256, ['labelA'], TrainMockModel({'content'}), 0, '-6543', 5, 0.05, 5),
+            ('112515', 'testID', '34567890', 256, ['labelA'], TrainMockModel({'content'}), 0, '-6543', 5, 0.05, 5, 0.01),
         ]
     )
     def test_on_train_end_add(self, user_id, dataset_id, model_id, batch_size, labels, model,
-                              initial_epoch, fitting_id, epochs, accuracy, epochs_trained,
+                              initial_epoch, fitting_id, epochs, accuracy, epochs_trained, learning_rate,
                               mocker):
         live_stats = ml.LiveStats(user_id)
         live_stats.epochs_trained = epochs_trained
@@ -127,7 +127,7 @@ class TestLiveStatsGroup:
                                                    initial_epoch,
                                                    None,
                                                    epochs,
-                                                   accuracy)}
+                                                   accuracy, learning_rate)}
         mocker.patch('backend.utils.storage_handler.get_user_handler', return_value={'Not None'})
         mocked_api = mocker.patch('backend.utils.api.notify_training_done')
         mocked_sh = mocker.patch('backend.utils.storage_handler.add_fitting', return_value=fitting_id)
@@ -136,6 +136,7 @@ class TestLiveStatsGroup:
                                           dataset_id,
                                           labels,
                                           epochs_trained,
+                                          learning_rate,
                                           accuracy,
                                           batch_size,
                                           model_id,
@@ -174,9 +175,9 @@ class TestLiveStatsGroup:
         mocked_api.assert_called_once_with(user_id, fitting_id, epochs_trained, accuracy)
 
 @pytest.mark.parametrize(
-    'user_id, dataset_id, model_id, labels, epochs, batch_size',
+    'user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size',
     [
-        ('456789', '0', '4567890', ['labelA', 'labelB'], 5, 128),
+        ('456789', '0', '4567890', ['labelA', 'labelB'], 5, 0.002, 128),
     ]
 )
 class TestTrainingClassGroup:
@@ -192,8 +193,8 @@ class TestTrainingClassGroup:
                      return_value=[None, None])
         mocker.patch('backend.machine_learning.ml_functions.Training.split_dataset', return_value=[None, None, None])
 
-    def test_training_init(self, user_id, dataset_id, model_id, labels, epochs, batch_size, mock_init_sh, mock_init_creation):
-        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, batch_size)
+    def test_training_init(self, user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size, mock_init_sh, mock_init_creation):
+        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size)
 
         assert test_training.user_id == user_id
         assert test_training.dataset_id == dataset_id
@@ -212,25 +213,25 @@ class TestTrainingClassGroup:
         'fitting_id, initial_epochs',
         [('-567', 6)]
     )
-    def test_training_init_load(self, user_id, dataset_id, model_id, labels, epochs, batch_size, fitting_id, initial_epochs, mocker, mock_init_sh, mock_init_creation):
+    def test_training_init_load(self, user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size, fitting_id, initial_epochs, mocker, mock_init_sh, mock_init_creation):
         mock_model = TrainMockModel()
         mocker.patch('backend.utils.storage_handler.get_fitting', return_value=mock_model)
         mocker.patch('backend.utils.storage_handler.get_fitting_summary', return_value={'epochs': initial_epochs})
 
-        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, batch_size, fitting_id)
+        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size, fitting_id)
 
         assert test_training.initial_epoch == initial_epochs, 'Initial epoch should not be different'
         assert test_training.epochs == epochs + initial_epochs, 'Training epochs should be epochs + initial_epochs'
         assert test_training.model == mock_model
 
-    def test_split_dataset(self, user_id, dataset_id, model_id, labels, epochs, batch_size, mocker, mock_init_sh, size=100):
+    def test_split_dataset(self, user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size, mocker, mock_init_sh, size=100):
         dataset_data = []
         for x in range(size):
             dataset_data.append([x, 3 * x])
         set = tf.data.Dataset.from_tensor_slices(dataset_data)
         mocker.patch('backend.machine_learning.ml_functions.Training.create_model_and_set',
                      return_value=[None, set])
-        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, batch_size)
+        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size)
         assert test_training.training_set.cardinality().numpy() == 70, 'Dataset should have a 70-20-10 split'
         assert test_training.validation_set.cardinality().numpy() == 20, 'Dataset should have a 70-20-10 split'
         assert test_training.test_set.cardinality().numpy() == 10, 'Dataset should have a 70-20-10 split'
@@ -242,20 +243,20 @@ class TestTrainingClassGroup:
             0.000000001,
         ]
     )
-    def test_evaluate_model(self, user_id, dataset_id, model_id, labels, epochs, batch_size, accuracy, mocker, mock_init_sh):
+    def test_evaluate_model(self, user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size, accuracy, mocker, mock_init_sh):
         mocker.patch('backend.machine_learning.ml_functions.Training.create_model_and_set',
                      return_value=[TrainMockModel(metrics_names={'r_square'}, evaluation={accuracy}), None])
         mocker.patch('backend.machine_learning.ml_functions.Training.split_dataset', return_value=[None, None, None])
-        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, batch_size)
+        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size)
         evaluated_accuracy = test_training.evaluate_model()
         assert evaluated_accuracy == round(accuracy * 100, 3), 'Expected to get accuracy back (as a rounded percentage)'
 
-    def test_training_stop(self, user_id, dataset_id, model_id, labels, epochs, batch_size, mocker, mock_init_sh):
+    def test_training_stop(self, user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size, mocker, mock_init_sh):
         mock_model = TrainMockModel()
         mocker.patch('backend.machine_learning.ml_functions.Training.create_model_and_set',
                      return_value=[mock_model, None])
         mocker.patch('backend.machine_learning.ml_functions.Training.split_dataset', return_value=[None, None, None])
-        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, batch_size)
+        test_training = ml.Training(user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size)
         return_value = test_training.stop_training()
         assert mock_model.stop_training, 'Expected stop_training to be True'
         assert return_value, 'Expected stopping to work'

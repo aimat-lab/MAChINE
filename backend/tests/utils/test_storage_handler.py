@@ -166,9 +166,9 @@ class TestBasicModelGroup:
         assert loaded_model == model, 'Loaded model should be the same'
 
 @pytest.mark.parametrize(
-    'test_dataset_id, test_labels, test_epochs, test_accuracy, test_batch_size, test_fitting',
+    'test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy, test_batch_size, test_fitting',
     [
-        ('0', ['testy_boi'], 500, 5, 1285, mm.BasicMockModel('content and more'))
+        ('0', ['testy_boi'], 500, 0.05, 5, 1285, mm.BasicMockModel('content and more'))
     ],
 )
 class TestBasicFittingsGroup:
@@ -187,14 +187,14 @@ class TestBasicFittingsGroup:
     def mock_keras_save(self, mocker):
         mocker.patch('tensorflow.keras.models.load_model', mm.load_model)
 
-    def test_fitting_addition(self, test_dataset_id, test_labels, test_epochs, test_accuracy, test_batch_size,
+    def test_fitting_addition(self, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy, test_batch_size,
                               test_fitting,
                               add_test_model, mock_keras_save):
         assert add_test_model is not None, 'Test setup'
         assert sh.get_model_summary(_test_user_id, add_test_model) != {}, 'Test setup'
         assert len(sh.get_model_summaries(_test_user_id)) == 1, 'Test setup'
         assert len(sh.get_fitting_summaries(_test_user_id)) == 0, 'Default state'
-        test_fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_accuracy,
+        test_fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy,
                                          test_batch_size, add_test_model, test_fitting)
         assert len(sh.get_fitting_summaries(_test_user_id)) == 1, 'Fitting summary should exist'
         assert test_fitting_id is not None, 'Should have a fitting ID'
@@ -206,6 +206,7 @@ class TestBasicFittingsGroup:
         assert fitting_summary.get('batchSize') == test_batch_size, 'batch_size should not be modified in call'
         assert fitting_summary.get('fittingPath') is not None, 'fittingPath should exist'
         assert fitting_summary.get('modelID') == add_test_model, 'modelID should be the same'
+        assert fitting_summary.get('learningRate') == test_learning_rate, 'learningRate should not be modified in call'
         assert sh.get_model_summary(_test_user_id, add_test_model).get('fittingIDs') == [
             test_fitting_id], 'Model should contain ' \
                               'this one fitting '
@@ -214,11 +215,11 @@ class TestBasicFittingsGroup:
         loaded_fitting = sh.get_fitting(_test_user_id, test_fitting_id)
         assert type(loaded_fitting) == type(test_fitting), 'fitting should get loaded'
 
-    def test_fitting_deletion(self, test_dataset_id, test_labels, test_epochs, test_accuracy, test_batch_size,
+    def test_fitting_deletion(self, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy, test_batch_size,
                               test_fitting,
                               add_test_model, mock_keras_save):
         assert add_test_model is not None, 'Test setup'
-        test_fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_accuracy,
+        test_fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy,
                                          test_batch_size, add_test_model, test_fitting)
         assert len(sh.get_fitting_summaries(_test_user_id)) == 1, 'Fitting summary should exist'
         path = sh.get_fitting_summary(_test_user_id, test_fitting_id).get('fittingPath')
@@ -227,23 +228,23 @@ class TestBasicFittingsGroup:
         assert len(sh.get_fitting_summaries(_test_user_id)) == 0, 'Fitting summary should be deleted'
         assert Path(path).exists() is False, 'Fitting should get deleted'
 
-    def test_fitting_deletion_on_model_deletion(self, test_dataset_id, test_labels, test_epochs, test_accuracy, test_batch_size,
+    def test_fitting_deletion_on_model_deletion(self, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy, test_batch_size,
                               test_fitting,
                               add_test_model, mock_keras_save):
         assert add_test_model is not None, 'Test setup'
-        test_fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_accuracy,
+        test_fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy,
                                             test_batch_size, add_test_model, test_fitting)
         assert len(sh.get_fitting_summaries(_test_user_id)) == 1, 'Fitting summary should exist'
         sh.delete_model(_test_user_id, add_test_model)
         assert len(sh.get_fitting_summaries(_test_user_id)) == 0, 'Fitting summary should be deleted'
 
     @pytest.mark.skip(reason='Loading/Saving has been disabled')
-    def test_fitting_loading(self, test_dataset_id, test_labels, test_epochs, test_accuracy, test_batch_size,
+    def test_fitting_loading(self, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy, test_batch_size,
                              test_fitting, add_test_model, mock_keras_save, mock_deletion):
         assert add_test_model is not None, 'Test setup'
         assert sh.get_model_summary(_test_user_id, add_test_model) != {}, 'Test setup'
         assert len(sh.get_model_summaries(_test_user_id)) == 1, 'Test setup'
-        test_fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_accuracy,
+        test_fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy,
                                          test_batch_size, add_test_model, test_fitting)
         fitting_summaries = sh.get_fitting_summaries(_test_user_id)
         fitting_summary = sh.get_fitting_summary(_test_user_id, test_fitting_id)
@@ -259,13 +260,13 @@ class TestBasicFittingsGroup:
         assert sh.get_fitting_summaries(_test_user_id) == fitting_summaries, 'Loaded fitting summaries dict should ' \
                                                                              'bee the exact same '
 
-    def test_broken_fitting(self, test_dataset_id, test_labels, test_epochs, test_accuracy, test_batch_size,
+    def test_broken_fitting(self, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy, test_batch_size,
                             test_fitting, add_test_model, mock_keras_save):
         assert add_test_model is not None, 'Test setup'
         assert sh.get_model_summary(_test_user_id, add_test_model) != {}, 'Test setup'
         assert len(sh.get_model_summaries(_test_user_id)) == 1, 'Test setup'
         test_fitting = mm.BrokenMockModel('broke')
-        fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_accuracy,
+        fitting_id = sh.add_fitting(_test_user_id, test_dataset_id, test_labels, test_epochs, test_learning_rate, test_accuracy,
                                     test_batch_size, add_test_model, test_fitting)
         assert fitting_id is None, 'Unsaved model cannot have an ID'
         assert len(sh.get_fitting_summaries(_test_user_id)) == 0, 'Fitting summary not be saved'

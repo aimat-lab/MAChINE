@@ -54,6 +54,7 @@ class TestModelRequestGroup:
                      'datasetID': 'dataset_id',
                      'labels': ['labels', 'labels2'],
                      'epochs': 5,
+                     'learningRate': 0.1,
                      'accuracy': 1,
                      'batchSize': 212,
                      'fittingPath': 'X',
@@ -93,6 +94,7 @@ class TestModelRequestGroup:
                 converted_fitting |= {'datasetName': sh_datasets.get(fitting['datasetID']).get('name')}
                 converted_fitting |= {'labels': fitting['labels']}
                 converted_fitting |= {'epochs': fitting['epochs']}
+                converted_fitting |= {'learningRate': fitting['learningRate']}
                 converted_fitting |= {'batchSize': fitting['batchSize']}
                 converted_fitting |= {'accuracy': fitting['accuracy']}
                 converted_fittings.append(converted_fitting)
@@ -199,6 +201,7 @@ class TestFittingRequestGroup:
                      'datasetID': 'dataset_id',
                      'labels': ['labels', 'labels2'],
                      'epochs': 5,
+                     'learningRate': 0.0001,
                      'accuracy': 1,
                      'batchSize': 212,
                      'fittingPath': 'X',
@@ -208,6 +211,7 @@ class TestFittingRequestGroup:
                      'datasetID': 'dataset_id',
                      'labels': ['label'],
                      'epochs': 524,
+                     'learningRate': 0.01,
                      'accuracy': 0.000200,
                      'batchSize': 212,
                      'fittingPath': 'X2',
@@ -239,6 +243,7 @@ class TestFittingRequestGroup:
             converted_fitting |= {'datasetName': sh_datasets.get(fitting['datasetID']).get('name')}
             converted_fitting |= {'labels': fitting['labels']}
             converted_fitting |= {'epochs': fitting['epochs']}
+            converted_fitting |= {'learningRate': fitting['learningRate']}
             converted_fitting |= {'batchSize': fitting['batchSize']}
             converted_fitting |= {'accuracy': fitting['accuracy']}
             assert converted_fitting in response_json, 'Response should contain every fitting properly formatted'
@@ -401,13 +406,13 @@ class TestAnalyzeRequestGroup:
 # TODO: Implement
 class TestTrainRequestGroup:
     @pytest.mark.parametrize(
-        'dataset_id, model_id, labels, epochs, batch_size',
+        'dataset_id, model_id, labels, epochs, batch_size, learning_rate',
         [
-            ('id', '-1523', ['label', 'label2'], 53, 456),
-            ('idawk', '34567', ['label'], 52, 456789)
+            ('id', '-1523', ['label', 'label2'], 53, 456, 0.3),
+            ('idawk', '34567', ['label'], 52, 456789, 0.0001)
         ]
     )
-    def test_train_post_response(self, dataset_id, model_id, labels, epochs, batch_size, client, mocker):
+    def test_train_post_response(self, dataset_id, model_id, labels, epochs, learning_rate, batch_size,client, mocker):
         magic_background = mocker.patch('backend.utils.api.sio.start_background_task')
         mocker.patch('backend.utils.api.ml.is_training_running', return_value=False)
         response = client.post(f'/users/{_test_user_id}/train', json={
@@ -416,6 +421,7 @@ class TestTrainRequestGroup:
             'epochs': epochs,
             'labels': json.dumps(labels),
             'batchSize': batch_size,
+            'learningRate': learning_rate,
         })
         magic_background.assert_called_once_with(
             target=backend.utils.api.ml.train,
@@ -424,6 +430,7 @@ class TestTrainRequestGroup:
             model_id=model_id,
             labels=labels,
             epochs=epochs,
+            learning_rate=learning_rate,
             batch_size=batch_size)
         assert response.status_code in range(200, 300), 'Expected request to work'
         assert response.json, 'Expecting response to be "True"'
