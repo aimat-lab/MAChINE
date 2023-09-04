@@ -114,7 +114,6 @@ export default function MLPModelVisual({
     physics: {
       hierarchicalRepulsion: {
         nodeDistance: 140,
-        avoidOverlap: 0.3,
       },
     },
   })
