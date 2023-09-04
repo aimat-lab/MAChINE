@@ -28,6 +28,10 @@ export default function ModelCreationRouter({ initSelectedIndex }) {
     api.getModelList().then((models) => setModelList(models))
   }
 
+  function deleteModel(index) {
+    api.deleteModelConfig(modelList[index].id).then(refreshModels)
+  }
+
   function saveModel(model) {
     // Find a duplicate
     const duplicate = modelList.find((savedModel) => {
@@ -52,6 +56,7 @@ export default function ModelCreationRouter({ initSelectedIndex }) {
           <ModelsPage
             modelList={modelList}
             initSelectedIndex={initSelectedIndex}
+            deleteModel={deleteModel}
           />
         }
       />

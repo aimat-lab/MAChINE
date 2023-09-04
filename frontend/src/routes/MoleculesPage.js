@@ -151,6 +151,13 @@ export default function MoleculesPage() {
             height={gridHeight}
             forcedSelectedIndex={selectedIndex}
             animateAdd={help.helpMode && !help.madeMolecule}
+            deleteCallback={(index) =>
+              api.deleteMolecule(molecules[index].smiles).then(() => {
+                refreshMolecules()
+                setSelectedIndex(-1)
+                setSelectedMolecule(null)
+              })
+            }
           ></SelectionList>
         </Grid>
         {/** The molecule creator (using kekule) on the right of the page **/}

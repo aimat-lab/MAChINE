@@ -14,6 +14,7 @@ import {
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import InfoIcon from '@mui/icons-material/Info'
+import DeleteIcon from '@mui/icons-material/Delete'
 import DetailsPopper from './DetailsPopper'
 import MoleculeInfo from '../molecules/MoleculeInfo'
 import PropTypes from 'prop-types'
@@ -29,6 +30,7 @@ import { pulseAnim } from '../../utils'
  * @param height string setting height of the list (ex: 88vh)
  * @param forcedSelectedIndex index set by parent component
  * @param animateAdd boolean whether the add button should be animated
+ * @param deleteCallback function to be called when using delete button
  * @returns {JSX.Element}
  */
 export default function SelectionList({
@@ -40,6 +42,7 @@ export default function SelectionList({
   height,
   forcedSelectedIndex,
   animateAdd,
+  deleteCallback,
 }) {
   const [selectedIndex, setSelectedIndex] = React.useState(forcedSelectedIndex)
   const [open, setOpen] = React.useState(false)
@@ -126,6 +129,15 @@ export default function SelectionList({
                 selected={selectedIndex === index}
               >
                 <ListItemText primary={element.name} />
+                <IconButton
+                  aria-label="delete"
+                  onClick={() => deleteCallback(index)}
+                  sx={{
+                    color: theme.darkMode ? '#797979' : '#888888',
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
                 {usePopper ? (
                   <PopperButton
                     element={element}
@@ -152,11 +164,12 @@ SelectionList.propTypes = {
   elements: PropTypes.array.isRequired,
   usePopper: PropTypes.bool.isRequired,
   elementType: PropTypes.string.isRequired,
-  updateFunc: PropTypes.func,
+  updateFunc: PropTypes.func.isRequired,
   addFunc: PropTypes.func.isRequired,
   height: PropTypes.any,
   forcedSelectedIndex: PropTypes.any,
   animateAdd: PropTypes.bool,
+  deleteCallback: PropTypes.func.isRequired,
 }
 
 SelectionList.defaultProps = {

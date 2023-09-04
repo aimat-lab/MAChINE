@@ -36,8 +36,13 @@ const gridHeight = '80vh'
  * Depicts a list of saved models and shows a description of the selected model on click
  * @param modelList list of models depicted
  * @param initSelectedIndex initially selected index of modelList
+ * @param deleteModel function to be called when deleting a model
  */
-export default function ModelsPage({ modelList, initSelectedIndex }) {
+export default function ModelsPage({
+  modelList,
+  initSelectedIndex,
+  deleteModel,
+}) {
   const [selectedIndex, setSelectedIndex] = React.useState(initSelectedIndex)
   const [showDialog, setShowDialog] = React.useState(false)
   const [helpAnchorEl, setHelpAnchorEl] = React.useState(null)
@@ -110,6 +115,7 @@ export default function ModelsPage({ modelList, initSelectedIndex }) {
             addFunc={initiateCreation}
             height={gridHeight}
             animateAdd={help.helpMode && !help.madeModel}
+            deleteCallback={deleteModel}
           />
         </Grid>
         <Grid item xs={9}>
@@ -154,6 +160,7 @@ export default function ModelsPage({ modelList, initSelectedIndex }) {
 ModelsPage.propTypes = {
   modelList: PropTypes.array.isRequired,
   initSelectedIndex: PropTypes.number,
+  deleteModel: PropTypes.func.isRequired,
 }
 
 ModelsPage.defaultProps = {
