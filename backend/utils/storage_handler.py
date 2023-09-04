@@ -153,7 +153,7 @@ class UserDataStorageHandler:
         if fitting_summary:
             path = Path(fitting_summary.get('fittingPath', 'fakestPathOfAll'))
             if path.exists():
-                path.rmdir()
+                shutil.rmtree(path)
 
     def save_fitting(self, fitting_id, fitting):
         path = self.user_fittings_path / f'{fitting_id}_fitting'

@@ -162,7 +162,7 @@ export default function TrainingParameterFields({
 TrainingParameterFields.propTypes = {
   helpOpen: PropTypes.func,
   helpClose: PropTypes.func,
-  epochs: PropTypes.number.isRequired,
+  epochs: PropTypes.any.isRequired,
   setEpochs: PropTypes.func.isRequired,
   errorCallback: PropTypes.func.isRequired,
 }
