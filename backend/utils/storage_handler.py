@@ -148,11 +148,12 @@ class UserDataStorageHandler:
         return fitting_id
 
     def delete_fitting(self, fitting_id):
-        fitting_summary = self.fitting_summaries.pop(fitting_id, {})
+        fitting_summary = self.fitting_summaries.pop(fitting_id, None)
         self.__save_summary_file('fittings.json', self.fitting_summaries)
-        path = Path(fitting_summary.get('fittingPath'))
-        if path.exists():
-            path.unlink()
+        if fitting_summary:
+            path = Path(fitting_summary.get('fittingPath', 'fakestPathOfAll'))
+            if path.exists():
+                path.rmdir()
 
     def save_fitting(self, fitting_id, fitting):
         path = self.user_fittings_path / f'{fitting_id}_fitting'

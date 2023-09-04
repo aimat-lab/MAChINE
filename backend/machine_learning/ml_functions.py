@@ -148,6 +148,8 @@ def analyze(user_id, fitting_id, smiles):
     # Gets required objects
     fitting = sh.get_fitting(user_id, fitting_id)
     fitting_summary = sh.get_fitting_summary(user_id, fitting_id)
+    if not fitting or not fitting_summary:
+        return None, 404
     model_summary = sh.get_model_summary(user_id, fitting_summary.get('modelID'))
     base_model = sh.get_base_model(model_summary.get('baseModelID'))
 

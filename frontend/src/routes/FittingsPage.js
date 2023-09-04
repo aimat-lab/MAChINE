@@ -58,6 +58,10 @@ export default function FittingsPage() {
   async function handleFittingSelection(fitting) {
     setOpenDialog(true)
     return api.analyzeMolecule(fitting.id, selectedSmiles).then((response) => {
+      if (!response) {
+        setOpenDialog(false)
+        return false
+      }
       help.setMadeAnalysis(true)
       return fetchHistograms(fitting, response)
     })

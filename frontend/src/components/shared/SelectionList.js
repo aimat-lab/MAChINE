@@ -131,7 +131,11 @@ export default function SelectionList({
                 <ListItemText primary={element.name} />
                 <IconButton
                   aria-label="delete"
-                  onClick={() => deleteCallback(index)}
+                  onClick={() => {
+                    deleteCallback(index)
+                    event.stopPropagation()
+                    event.preventDefault()
+                  }}
                   sx={{
                     color: theme.darkMode ? '#797979' : '#888888',
                   }}
