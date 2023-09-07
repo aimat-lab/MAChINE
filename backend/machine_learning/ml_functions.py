@@ -44,7 +44,6 @@ class Training:
     def create_model_and_set(self, model_type, parameters, dataset, labels, metrics):
         # decode loss, optimizer and metrics from strings
         optimizer = mld.optimizers.get(parameters.get('optimizer'))(learning_rate=self.learning_rate)
-        print(optimizer)
         return mld.creation_functions.get(model_type)(parameters,
                                                       dataset,
                                                       labels,
