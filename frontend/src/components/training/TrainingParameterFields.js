@@ -95,13 +95,13 @@ export default function TrainingParameterFields({
     batchSize: (target) => {
       helpOpen(
         target,
-        "The batch size determines how often the net's parameters are adjusted. The smaller the batch size, the more often that's the case!"
+        "The batch size determines how often the model's parameters are adjusted. The smaller the batch size, the more often that's the case!"
       )
     },
     learningRate: (target) => {
       helpOpen(
         target,
-        'The learning rate determines how fast the net tries to learn. Too small and the net will never learn, too big and it will never stop!'
+        'The learning rate determines how fast the model tries to learn. Too small and your model will never learn, too big and it will never stop!'
       )
     },
   }
