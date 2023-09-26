@@ -22,10 +22,6 @@ i18n
   .init({
     fallbackLng: 'en',
     debug: true,
-
-    interpolation: {
-      escapeValue: false, // not needed for react as it escapes by default
-    },
   })
-
+i18n.changeLanguage('de')
 export default i18n

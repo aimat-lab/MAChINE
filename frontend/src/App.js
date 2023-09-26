@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import api from './api'
 import ScoreboardsPage from './routes/ScoreboardsPage'
@@ -24,9 +24,11 @@ import Particles from 'react-tsparticles'
 import { STATUS } from 'react-joyride'
 import { loadFull } from 'tsparticles'
 import { handleErrors } from './utils'
+import { useTranslation } from 'react-i18next'
 
 // The main app component
-export default function App() {
+export function App() {
+  const { t, i18n } = useTranslation()
   // Set the theme based on the user's system preference
   const [darkMode, setDarkMode] = React.useState(
     window.matchMedia &&
@@ -232,5 +234,13 @@ export default function App() {
         </UserProvider>
       </ThemeProvider>
     </div>
+  )
+}
+
+export default function WrappedApp() {
+  return (
+    <Suspense fallback="...loading">
+      <App />
+    </Suspense>
   )
 }

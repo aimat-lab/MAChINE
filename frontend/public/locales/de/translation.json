@@ -1,3 +1,7 @@
 {
   "molele": "Hallo! Ich bin Molele."
+  "languages": {
+    "de": "Deutsch",
+    "en": "Englisch"
+  }
 }

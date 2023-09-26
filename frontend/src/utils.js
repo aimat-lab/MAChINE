@@ -133,3 +133,5 @@ export const pulseAnim = keyframes`
     transform: scale(1);
   }
 `
+
+export const languages = ['en', 'de']

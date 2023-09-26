@@ -12,6 +12,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../logo.svg'
 import PropTypes from 'prop-types'
 import HelpModeButton from './HelpModeButton'
+import LanguageSwitcher from './LanguageSwitcher'
 
 const links = {
   home: {
@@ -150,6 +151,7 @@ export default function Navbar({ logoutFunction, darkModeButton }) {
         <ServerStatusButton />
         <HelpModeButton />
         {darkModeButton}
+        <LanguageSwitcher />
       </Toolbar>
       <style>{`
         a {
