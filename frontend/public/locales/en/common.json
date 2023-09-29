@@ -25,5 +25,8 @@
     "dataset": "Dataset",
     "label": "Label",
     "label_plural": "Labels"
+  },
+  "selectionList": {
+    "addButton": "Add a {{object}}"
   }
 }

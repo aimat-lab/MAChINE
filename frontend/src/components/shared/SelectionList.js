@@ -19,6 +19,7 @@ import DetailsPopper from './DetailsPopper'
 import MoleculeInfo from '../molecules/MoleculeInfo'
 import PropTypes from 'prop-types'
 import { pulseAnim } from '../../utils'
+import { useTranslation } from 'react-i18next'
 
 /**
  * List of given elements with corresponding avatars and description text
@@ -49,6 +50,8 @@ export default function SelectionList({
   const [content, setContent] = React.useState(<h1>Placeholder</h1>)
   const [anchor, setAnchor] = React.useState(null)
   const theme = useTheme()
+  const { t, i18n } = useTranslation('common')
+
   /**
    * popper configuration
    * @param target selected target field
@@ -106,7 +109,8 @@ export default function SelectionList({
               animation: animateAdd ? `${pulseAnim} 2s infinite` : 'none',
             }}
           >
-            <AddIcon sx={{ mr: 1 }} /> Add a {elementType}
+            <AddIcon sx={{ mr: 1 }} />
+            {t('selectionList.addButton', { object: elementType })}
           </Button>
         </CardActions>
         {elements.length === 0 ? (
