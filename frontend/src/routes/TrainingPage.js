@@ -20,6 +20,7 @@ import HelpContext from '../context/HelpContext'
 import TrainingContext from '../context/TrainingContext'
 import { useNavigate } from 'react-router-dom'
 import TrainingParameterFields from '../components/training/TrainingParameterFields'
+import { pulseAnim } from '../utils'
 
 /**
  * Holds epoch and batch size configuration, as well as selected model and dataset details
@@ -77,6 +78,7 @@ export default function TrainingPage() {
         .then((response) => {
           setOpenSnackError(!response)
           setLoadTraining(response)
+          help.setMadeFitting(true)
         })
     }
   }
@@ -139,7 +141,7 @@ export default function TrainingPage() {
 
   return (
     <Grid container>
-      <Grid item xs={6}>
+      <Grid item xs={6} className="training-overview-parameters">
         <Grid item sx={{ display: 'flex' }}>
           <TrainingParameterFields
             helpOpen={handleHelpPopperOpen}
@@ -193,7 +195,13 @@ export default function TrainingPage() {
               size="large"
               variant="contained"
               disabled={parameterError}
-              sx={{ m: 2 }}
+              sx={{
+                m: 2,
+                animation:
+                  help.helpMode && !help.madeFitting
+                    ? `${pulseAnim} 2s infinite`
+                    : 'none',
+              }}
               onClick={handleStartStop}
             >
               {startStopButton}

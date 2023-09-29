@@ -4,31 +4,27 @@ import {
   Button,
   Card,
   CardActionArea,
-  CircularProgress,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Grid,
-  List,
-  ListItem,
-  ListItemText,
   Typography,
   useTheme,
   Zoom,
 } from '@mui/material'
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined'
+import CircularProgress from '@mui/material/CircularProgress'
 import api from '../api'
 import FittingCard from '../components/models/FittingCard'
 import Histogram from '../components/datasets/Histogram'
-import DetailsPopper from '../components/shared/DetailsPopper'
 import HelpPopper from '../components/shared/HelpPopper'
 import UserContext from '../context/UserContext'
 import HelpContext from '../context/HelpContext'
 import TrainingContext from '../context/TrainingContext'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { camelToNaturalString } from '../utils'
-import PropTypes from 'prop-types'
 
 /**
  * Selection component for fittings to analyze molecule in react-router location
@@ -37,11 +33,6 @@ import PropTypes from 'prop-types'
  */
 export default function FittingsPage() {
   const [fittingArray, setFittingArray] = React.useState([])
-  const [openDetails, setOpenDetails] = React.useState(false)
-  const [fittingDetails, setFittingDetails] = React.useState(
-    <h1>Placeholder</h1>
-  )
-  const [detailsAnchor, setDetailsAnchor] = React.useState(null)
   const [openDialog, setOpenDialog] = React.useState(false)
   const [analysis, setAnalysis] = React.useState({})
   const [highlightedIndices, setHighlightedIndices] = React.useState({
@@ -56,7 +47,7 @@ export default function FittingsPage() {
   const user = React.useContext(UserContext)
   const training = React.useContext(TrainingContext)
   const { state } = useLocation()
-  const { selectedSmiles } = state
+  const selectedSmiles = state?.selectedSmiles
   const theme = useTheme()
   const navigate = useNavigate()
 
@@ -65,7 +56,9 @@ export default function FittingsPage() {
   }, [user, training.trainingStatus])
 
   async function handleFittingSelection(fitting) {
+    setOpenDialog(true)
     return api.analyzeMolecule(fitting.id, selectedSmiles).then((response) => {
+      help.setMadeAnalysis(true)
       return fetchHistograms(fitting, response)
     })
   }
@@ -116,13 +109,10 @@ export default function FittingsPage() {
     setOpenDialog(true)
   }
 
-  const handleDetailsPopper = (target, content, show) => {
-    setFittingDetails(content)
-    setDetailsAnchor(target)
-    setOpenDetails(show)
-  }
-
   const handleCloseDialog = () => {
+    setChartData({ empty: [] })
+    setAnalysis({})
+    setHighlightedIndices({ empty: -1 })
     setOpenDialog(false)
   }
 
@@ -178,6 +168,7 @@ export default function FittingsPage() {
   } else {
     return (
       <Box sx={{ m: 5 }}>
+        {help.helpMode ? <h1>Click to select</h1> : null}
         <Box
           sx={{
             display: 'grid',
@@ -189,16 +180,7 @@ export default function FittingsPage() {
             <FittingCard
               fitting={fitting}
               key={fitting.id}
-              clickFunc={(event) => {
-                handleDetailsPopper(
-                  event.currentTarget,
-                  <FittingDetails
-                    fitting={fitting}
-                    onClickFunc={handleFittingSelection}
-                  />,
-                  event.currentTarget !== detailsAnchor || !openDetails
-                )
-              }}
+              clickFunc={() => handleFittingSelection(fitting)}
               hoverFunc={(e) => {
                 handleHelpPopperOpen(
                   e,
@@ -218,30 +200,40 @@ export default function FittingsPage() {
             maxWidth="md"
           >
             <DialogTitle id="alert-dialog-title">
-              {'You successfully analyzed your molecule!'}
+              {highlightedIndices.empty !== -1
+                ? 'You successfully analyzed your molecule!'
+                : 'Analyzing your molecule...'}
             </DialogTitle>
-            <DialogContent>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  margin: 'auto',
-                  width: '90%',
-                }}
-              >
-                {Object.entries(chartData).map(([label, data], index) => {
-                  return (
-                    <Histogram
-                      data={data}
-                      highlightedIndex={highlightedIndices[label]}
-                      title={`${camelToNaturalString(label)}: ${
-                        analysis[label]
-                      }`}
-                      key={index}
-                    />
-                  )
-                })}
-              </Box>
+            <DialogContent sx={{ textAlign: 'center' }}>
+              <Collapse in={highlightedIndices.empty !== -1}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    margin: 'auto',
+                    width: '90%',
+                  }}
+                >
+                  {Object.entries(chartData).map(([label, data], index) => {
+                    return (
+                      <Histogram
+                        data={data}
+                        highlightedIndex={highlightedIndices[label]}
+                        title={`${camelToNaturalString(label)}: ${
+                          analysis[label]
+                        }`}
+                        key={index}
+                      />
+                    )
+                  })}
+                </Box>
+              </Collapse>
+              <Collapse in={highlightedIndices.empty === -1}>
+                <CircularProgress
+                  fontSize="large"
+                  sx={{ alignSelf: 'center' }}
+                />
+              </Collapse>
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseDialog}>Back</Button>
@@ -250,63 +242,16 @@ export default function FittingsPage() {
               </Button>
             </DialogActions>
           </Dialog>
-          <DetailsPopper
-            anchor={detailsAnchor}
-            open={openDetails}
-            content={fittingDetails}
-          />
           <HelpPopper
             id="helpPopper"
             helpPopperContent={helpPopperContent}
             open={Boolean(helpAnchorEl)}
             anchorEl={helpAnchorEl}
             onClose={handleHelpPopperClose}
+            placement="bottom"
           />
         </Box>
       </Box>
     )
   }
-}
-
-function FittingDetails({ fitting, onClickFunc }) {
-  const [loading, setLoading] = React.useState(false)
-
-  function handleClick() {
-    setLoading(true)
-    onClickFunc(fitting).then(() => setLoading(false))
-  }
-
-  return (
-    <Box>
-      <Button
-        fullWidth
-        variant="contained"
-        sx={{ mb: 2 }}
-        onClick={handleClick}
-      >
-        Choose this model
-        {loading ? (
-          <CircularProgress size="16px" color="inherit" sx={{ ml: 1 }} />
-        ) : null}
-      </Button>
-      <List
-        sx={{ py: 0, maxHeight: '55vh', overflow: 'auto' }}
-        subheader="Labels:"
-      >
-        {fitting.labels.map((label) => {
-          return (
-            <ListItem key={label}>
-              <ListItemText primary={camelToNaturalString(label)} />
-            </ListItem>
-          )
-        })}
-      </List>
-    </Box>
-  )
-}
-
-FittingDetails.propTypes = {
-  fitting: PropTypes.object.isRequired,
-  onClickFunc: PropTypes.func,
-  buttonLoading: PropTypes.bool,
 }

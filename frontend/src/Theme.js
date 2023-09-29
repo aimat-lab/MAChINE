@@ -33,6 +33,9 @@ export const themeBase = {
     fontWeightRegular: 400,
     fontWeightMedium: 400,
   },
+  logo: {
+    main: '/logo.svg',
+  },
 }
 
 // Create the light theme.
@@ -69,6 +72,10 @@ export const themeLight = createTheme(
     },
     home: {
       mascot: '/molele.svg',
+    },
+    stepper: {
+      active: '#4db1b6',
+      completed: '#68C1C7',
     },
     darkMode: false,
   })
@@ -112,6 +119,10 @@ export const themeDark = createTheme(
     },
     home: {
       mascot: '/molele-dark.svg',
+    },
+    stepper: {
+      active: '#b92e73',
+      completed: '#7e4760',
     },
     darkMode: true,
   })

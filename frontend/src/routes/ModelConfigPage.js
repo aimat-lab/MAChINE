@@ -161,6 +161,7 @@ export default function ModelConfigPage({ addFunc }) {
         showSnackError(`The model could not be saved.`)
         break
       default:
+        help.setMadeModel(true)
         navigate('/models')
     }
   }

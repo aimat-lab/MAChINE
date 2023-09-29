@@ -13,7 +13,6 @@ import ModelCreationRouter from './routes/ModelCreationRouter'
 import Onboarding from './components/onboarding/Onboarding'
 import Navbar from './components/misc/Navbar'
 import DarkModeButton from './components/misc/DarkModeButton'
-import HelpModeButton from './components/misc/HelpModeButton'
 import { HelpProvider } from './context/HelpContext'
 import { UserProvider } from './context/UserContext'
 import { TrainingProvider } from './context/TrainingContext'
@@ -34,7 +33,6 @@ export default function App() {
       window.matchMedia('(prefers-color-scheme: dark)').matches
   )
   const [theme, setTheme] = React.useState(darkMode ? themeDark : themeLight)
-  const [helpMode, setHelpMode] = React.useState(false)
   const [userName, setUserName] = React.useState(null)
   const [adminMode, setAdminMode] = React.useState(false)
   const [runOnboarding, setRunOnboarding] = React.useState(false)
@@ -84,10 +82,6 @@ export default function App() {
     setTheme(value ? themeDark : themeLight)
   }
 
-  const changeHelpMode = (value) => {
-    setHelpMode(value)
-  }
-
   // Error handling for production
   handleErrors()
 
@@ -122,7 +116,7 @@ export default function App() {
     <div className="App" onContextMenu={(e) => e.preventDefault()}>
       <ThemeProvider theme={theme}>
         <UserProvider value={{ userName, adminMode, setAdminMode }}>
-          <HelpProvider value={{ helpMode, setHelpMode }}>
+          <HelpProvider>
             <TrainingProvider>
               <CssBaseline />
               <BrowserRouter>
@@ -132,12 +126,6 @@ export default function App() {
                     <DarkModeButton
                       initialDarkMode={darkMode}
                       setModeFunction={changeDarkMode}
-                    />
-                  }
-                  helpModeButton={
-                    <HelpModeButton
-                      initialHelpMode={helpMode}
-                      setModeFunction={changeHelpMode}
                     />
                   }
                 />

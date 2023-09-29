@@ -25,6 +25,7 @@ import UserContext from '../context/UserContext'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { Kekule } from 'kekule'
+import { pulseAnim } from '../utils'
 
 const gridHeight = '85vh'
 
@@ -104,6 +105,7 @@ export default function MoleculesPage() {
         .addMolecule(smiles, cml, molName)
         .then(() => {
           refreshMolecules(new Molecule(molName, smiles, cml))
+          help.setMadeMolecule(true)
         })
         .catch(() =>
           showSnackMessage(
@@ -143,6 +145,7 @@ export default function MoleculesPage() {
             updateFunc={(index) => onMoleculeSelect(index)}
             height={gridHeight}
             forcedSelectedIndex={selectedIndex}
+            animateAdd={help.helpMode && !help.madeMolecule}
           ></SelectionList>
         </Grid>
         {/** The molecule creator (using kekule) on the right of the page **/}
@@ -198,6 +201,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
   const [show3D, setShow3D] = React.useState(false)
   const navigate = useNavigate()
   const theme = useTheme()
+  const help = React.useContext(HelpContext)
 
   React.useEffect(() => {
     // Every time a molecule is supposed to be drawn, a new ChemDocument is created. (Easiest solution for handling kekule molecules)
@@ -332,7 +336,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
         </Box>
         <Button
           size="large"
-          variant="contained"
+          variant="outlined"
           onClick={changeView}
           endIcon={!converting ? <VisibilityIcon /> : null}
           sx={{ ml: 12 }}
@@ -345,7 +349,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
         <Box sx={{ flexGrow: 1 }}></Box>
         <Button
           size="large"
-          variant="outlined"
+          variant="contained"
           className="analyze-button"
           onClick={() =>
             navigate('/trained-models', {
@@ -353,6 +357,12 @@ function MoleculeView({ selectedMolecule, onSave }) {
             })
           }
           disabled={!(selectedMolecule && selectedMolecule.smiles)}
+          sx={{
+            animation:
+              help.helpMode && help.madeMolecule && !help.madeAnalysis
+                ? `${pulseAnim} 2s infinite`
+                : 'none',
+          }}
         >
           Analyze {selectedMolecule ? selectedMolecule.name : ''}
         </Button>

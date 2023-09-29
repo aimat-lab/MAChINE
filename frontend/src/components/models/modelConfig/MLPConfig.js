@@ -25,7 +25,7 @@ export default function MLPConfig({
 
   return (
     <FormControl fullWidth>
-      <InputLabel sx={{ m: 2 }}>Activation Function</InputLabel>
+      <InputLabel sx={{ m: 2 }}>Default Activation Function</InputLabel>
       <Select
         value={activation}
         label="Default Activation Function"
@@ -36,7 +36,10 @@ export default function MLPConfig({
         onMouseOver={(e) => {
           hoverFunc(
             e,
-            'The standard activation function for this model.\nThink of an activation function as the way a neuron decides whether to act on an incoming signal and if so, how much it will react!\nWhen you create a new layer, you can choose its activation function individually, or you can set your default activation function here on the right.'
+            'The standard activation function for this model.\n' +
+              'When you create a new layer, you can choose its activation function individually, \n' +
+              'however your chosen default activation function will be preselected for you. \n' +
+              'Think of an activation function as the way a neuron decides whether to act on an incoming signal and if so, how much it will react!'
           )
         }}
         onMouseLeave={leaveFunc}

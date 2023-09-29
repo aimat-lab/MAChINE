@@ -40,6 +40,7 @@ export default function BaseModelsPage() {
   }
   return (
     <Box sx={{ m: 5 }}>
+      {help.helpMode ? <h1>Click to select</h1> : null}
       <Box
         sx={{
           display: 'grid',

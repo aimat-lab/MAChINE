@@ -17,6 +17,7 @@ import InfoIcon from '@mui/icons-material/Info'
 import DetailsPopper from './DetailsPopper'
 import MoleculeInfo from '../molecules/MoleculeInfo'
 import PropTypes from 'prop-types'
+import { pulseAnim } from '../../utils'
 
 /**
  * List of given elements with corresponding avatars and description text
@@ -27,6 +28,7 @@ import PropTypes from 'prop-types'
  * @param addFunc function to be called when using add button
  * @param height string setting height of the list (ex: 88vh)
  * @param forcedSelectedIndex index set by parent component
+ * @param animateAdd boolean whether the add button should be animated
  * @returns {JSX.Element}
  */
 export default function SelectionList({
@@ -37,13 +39,13 @@ export default function SelectionList({
   addFunc,
   height,
   forcedSelectedIndex,
+  animateAdd,
 }) {
   const [selectedIndex, setSelectedIndex] = React.useState(forcedSelectedIndex)
   const [open, setOpen] = React.useState(false)
   const [content, setContent] = React.useState(<h1>Placeholder</h1>)
   const [anchor, setAnchor] = React.useState(null)
   const theme = useTheme()
-
   /**
    * popper configuration
    * @param target selected target field
@@ -73,6 +75,7 @@ export default function SelectionList({
 
   return (
     <Card
+      className="selection-list"
       sx={{
         height,
         maxHeight: height,
@@ -83,10 +86,14 @@ export default function SelectionList({
       >
         <CardActions>
           <Button
+            className="add-item-button"
             aria-label="Add item"
             onClick={() => {
               handleIndexChange(-1)
               addFunc()
+            }}
+            sx={{
+              animation: animateAdd ? `${pulseAnim} 2s infinite` : 'none',
             }}
           >
             <AddIcon sx={{ mr: 1 }} /> Add a {elementType}
@@ -149,6 +156,7 @@ SelectionList.propTypes = {
   addFunc: PropTypes.func.isRequired,
   height: PropTypes.any,
   forcedSelectedIndex: PropTypes.any,
+  animateAdd: PropTypes.bool,
 }
 
 SelectionList.defaultProps = {

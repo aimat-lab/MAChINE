@@ -29,7 +29,7 @@ import HelpContext from '../context/HelpContext'
 import TrainingContext from '../context/TrainingContext'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { camelToNaturalString } from '../utils'
+import { camelToNaturalString, pulseAnim } from '../utils'
 
 const gridHeight = '80vh'
 /**
@@ -109,6 +109,7 @@ export default function ModelsPage({ modelList, initSelectedIndex }) {
             usePopper={false}
             addFunc={initiateCreation}
             height={gridHeight}
+            animateAdd={help.helpMode && !help.madeModel}
           />
         </Grid>
         <Grid item xs={9}>
@@ -179,6 +180,7 @@ function ModelDescription({
     React.useContext(TrainingContext)
   const navigate = useNavigate()
   const theme = useTheme()
+  const help = React.useContext(HelpContext)
 
   React.useEffect(() => {
     selectedModel !== undefined
@@ -224,7 +226,7 @@ function ModelDescription({
             onMouseOver={(e) => {
               hoverFunc(
                 e,
-                "Here you see all relevant information of your model.\nOn the top, you can see the model's name, as well as which base model was used to create it.\nSince you can train every model multiple times, you can see all of its trained models listed below.\nTo start a new training with your selected model, simply click on 'Select training data'!"
+                "Here you see all relevant information of your model.\nOn the top, you can see the model's name, as well as which base model was used to create it.\nSince you can train every model multiple times, you can see all of its trained models listed below.\nTo start a new training with your selected model, simply click on 'Train Model'!"
               )
             }}
             onMouseLeave={leaveFunc}
@@ -291,8 +293,14 @@ function ModelDescription({
               <Button
                 onClick={handleClickSelectDataset}
                 className="select-training-data"
+                sx={{
+                  animation:
+                    help.helpMode && !help.madeFitting && help.madeModel
+                      ? `${pulseAnim} 2s infinite`
+                      : 'none',
+                }}
               >
-                Select Training Data
+                Train Model
               </Button>
             </Grid>
           </CardActions>
