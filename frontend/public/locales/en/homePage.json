@@ -1,0 +1,49 @@
+{
+  "helpIcon": "To have individual components of MAChINE explained to you, click on the <1 /> icon on the top right and then hover over the respective component with your mouse. To turn the explanations off, simply click on the button again.",
+  "credits": {
+    "client": "<0>MAChINE </0> was made for:",
+    "developer": "by:",
+    "aimat": {
+      "name": "AiMat",
+      "description": "The AiMat (Artificial Intelligence for Materials sciences) group\n              of KIT develops AI and machine learning solutions for the\n              materials sciences."
+    },
+    "msg": {
+      "name": "Medium-sized Geckos",
+      "homepage": "GECKO Homepage",
+      "description": "This application was created by the \"Medium-sized Geckos\" group, which consists mostly of members of the freshman orientation group \"Team Gecko\"."
+    }
+  },
+  "molele":{
+    "greeting": "Hi, I'm Molele!",
+    "dontKnow": "Don't know how to get started?",
+    "letMe": "Let me show you!"
+  },
+  "stepper": {
+    "start": "$t(common:buttons.start)",
+    "configure": {
+      "label": "Configure",
+      "description": "Configure custom machine learning models to predict properties of molecules",
+      "verb": "configuring"
+    },
+    "train": {
+      "label": "Train",
+      "description": "Train your custom models and watch them learn",
+      "verb": "training"
+    },
+    "draw": {
+      "label": "Draw",
+      "description": "Draw any molecule imaginable and preview it in 3D",
+      "verb": "drawing"
+    },
+    "analyze": {
+      "label": "Analyze",
+      "description": "Analyze your molecules for various properties with the models you trained",
+      "verb": "analyzing"
+    },
+    "compare": {
+      "label": "Compare",
+      "description": "Compare your molecules and models to other users' creations",
+      "verb": "comparing"
+    }
+  }
+}

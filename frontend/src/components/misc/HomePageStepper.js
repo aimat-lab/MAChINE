@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 /**
  * @description Shadow for the StepIconContainer. Required because css drop-shadows don't work directly on clipPath divs
@@ -132,6 +133,7 @@ StepperIcon.propTypes = {
  */
 export default function HomePageStepper({ steps }) {
   const navigate = useNavigate()
+  const { t } = useTranslation('homePage')
 
   const handleStep = () => {
     navigate(steps[activeStep].location)
@@ -194,7 +196,7 @@ export default function HomePageStepper({ steps }) {
           sx={{ mt: 1, mr: 1 }}
           color="primary"
         >
-          Start {steps[activeStep].buttonVerb}!
+          {t('stepper.start')} {steps[activeStep].buttonVerb}!
         </Button>
       </Box>
     </Box>

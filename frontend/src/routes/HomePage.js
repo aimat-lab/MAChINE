@@ -19,6 +19,7 @@ import HomePageStepper from '../components/misc/HomePageStepper'
 import Image from 'mui-image'
 import PropTypes from 'prop-types'
 import HelpContext from '../context/HelpContext'
+import { Trans, useTranslation } from 'react-i18next'
 
 /**
  * Introductory page including credits, hints, links to core components
@@ -30,49 +31,47 @@ import HelpContext from '../context/HelpContext'
 export default function HomePage({ startOnboarding }) {
   const theme = useTheme()
   const help = React.useContext(HelpContext)
+  const { t } = useTranslation('homePage')
 
   const steps = [
     {
-      label: 'Configure',
-      description:
-        'Configure custom machine learning models to predict properties of molecules',
+      label: t('stepper.configure.label'),
+      description: t('stepper.configure.description'),
       icon: SettingsIcon,
       location: '/models',
-      buttonVerb: 'configuring',
+      buttonVerb: t('stepper.configure.verb'),
       completed: help.madeModel,
     },
     {
-      label: 'Train',
-      description: 'Train your custom models and watch them learn',
+      label: t('stepper.train.label'),
+      description: t('stepper.train.description'),
       icon: TimelineIcon,
       location: '/models',
-      buttonVerb: 'training',
+      buttonVerb: t('stepper.train.verb'),
       completed: help.madeFitting,
     },
     {
-      label: 'Draw',
-      description: 'Draw any molecule imaginable and preview it in 3D',
+      label: t('stepper.draw.label'),
+      description: t('stepper.draw.description'),
       icon: CreateIcon,
       location: '/molecules',
-      buttonVerb: 'drawing',
+      buttonVerb: t('stepper.draw.verb'),
       completed: help.madeMolecule,
     },
     {
-      label: 'Analyze',
-      description:
-        'Analyze your molecules for various properties with the models you trained',
+      label: t('stepper.analyze.label'),
+      description: t('stepper.analyze.description'),
       icon: AssessmentIcon,
       location: '/molecules',
-      buttonVerb: 'analyzing',
+      buttonVerb: t('stepper.analyze.verb'),
       completed: help.madeAnalysis,
     },
     {
-      label: 'Compare',
-      description:
-        "Compare your molecules and models to other users' creations",
+      label: t('stepper.compare.label'),
+      description: t('stepper.compare.description'),
       icon: CompareArrowsIcon,
       location: '/results',
-      buttonVerb: 'comparing',
+      buttonVerb: t('stepper.compare.verb'),
       completed: help.madeComparison,
     },
   ]
@@ -97,9 +96,9 @@ export default function HomePage({ startOnboarding }) {
           />
         </Box>
         <Box>
-          <Typography variant="h2">Hi! I&apos;m Molele!</Typography>
+          <Typography variant="h2">{t('molele.greeting')}</Typography>
           <Typography variant="h6" color="text.secondary">
-            Don&apos;t know how to get started?{' '}
+            {t('molele.dontKnow')}{' '}
             <Button
               variant="outlined"
               style={{
@@ -112,23 +111,30 @@ export default function HomePage({ startOnboarding }) {
                 startOnboarding()
               }}
             >
-              Let me show you!
+              {t('molele.letMe')}
             </Button>
           </Typography>
         </Box>
       </Box>
       <HomePageStepper steps={steps} />
-      <Box sx={{ mb: 12, mt: 5 }}>
+      <Box
+        sx={{
+          mb: 12,
+          mt: 5,
+        }}
+      >
         <Typography
           variant="h6"
           color="text.secondary"
           paragraph
           component="div"
+          align="center"
         >
-          To have individual components of MAChINE explained to you, click on
-          the <HelpOutlineOutlinedIcon /> icon on the top right and then hover
-          over the respective component with your mouse. To turn the
-          explanations off, simply click on the button again.
+          <Trans i18nKey="homePage:helpIcon">
+            Dummy text
+            <HelpOutlineOutlinedIcon />
+            More Dummy Text
+          </Trans>
         </Typography>
       </Box>
       <HomeCredits />
@@ -167,6 +173,7 @@ HomePage.propTypes = {
 
 function HomeCredits() {
   const theme = useTheme()
+  const { t } = useTranslation('homePage')
   return (
     <Box
       sx={{
@@ -180,8 +187,10 @@ function HomeCredits() {
     >
       <Box>
         <Typography variant="h4" color="text.primary" paragraph>
-          <span style={{ color: theme.palette.primary.main }}>MAChINE</span> was
-          made for:
+          <Trans i18nKey="homePage:credits.client">
+            <span style={{ color: theme.palette.primary.main }}>MAChINE </span>
+            was made for:
+          </Trans>
         </Typography>
         <Card>
           <CardMedia
@@ -192,12 +201,10 @@ function HomeCredits() {
           />
           <CardContent>
             <Typography gutterBottom variant="h5" component="div">
-              AiMat
+              {t('credits.aimat.name')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              The AiMat (Artificial Intelligence for Materials sciences) group
-              of KIT develops AI and machine learning solutions for the
-              materials sciences and is the client for this web application.
+              {t('credits.aimat.description')}
             </Typography>
           </CardContent>
           <CardActions>
@@ -206,14 +213,14 @@ function HomeCredits() {
               href="https://aimat.iti.kit.edu/"
               target="_blank"
             >
-              Learn More
+              {t('common:buttons.learnMore')}
             </Button>
           </CardActions>
         </Card>
       </Box>
       <Box sx={{ mt: 16 }}>
         <Typography variant="h4" color="text.primary" paragraph>
-          by:
+          {t('credits.developer')}
         </Typography>
         <Card>
           <CardMedia
@@ -223,17 +230,15 @@ function HomeCredits() {
           />
           <CardContent>
             <Typography gutterBottom varian="h5" component="div">
-              Medium-sized Geckos
+              {t('credits.msg.name')}
             </Typography>
             <Typography varaint="body2" color="text.secondary">
-              This PSE project was created by the &apos;Medium-sized
-              Geckos&apos; group, which consists mostly of members of the
-              O-Phase group &apos;Team Gecko&apos;.
+              {t('credits.msg.description')}
             </Typography>
           </CardContent>
           <CardActions>
             <Button size="small" href="https://team-gecko.de/" target="_blank">
-              GECKO Homepage
+              {t('credits.msg.homepage')}
             </Button>
           </CardActions>
         </Card>

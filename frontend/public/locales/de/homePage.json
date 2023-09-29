@@ -1,0 +1,49 @@
+{
+  "helpIcon": "Um die einzelnen Komponenten von MAChINE erklärt zu bekommen, klicke auf das <1 /> Symbol oben rechts und lasse deine Maus über der jeweiligen Komponente (bei Touchscreens lange draufdrücken). Um die Erklärungen auszuschalten, klicke einfach wieder auf das Symbol.",
+  "credits": {
+      "client": "<0>MAChINE </0> ist für:",
+      "developer": "von:",
+      "aimat": {
+        "name": "AiMat",
+        "description": "Die AiMat (Artificial Intelligence for Materials sciences) Forschungsgruppe des KIT entwickelt Methoden zur Materialforschung mithilfe von KI und maschinellem Lernen."
+      },
+      "msg":{
+        "name": "Medium-sized Geckos",
+        "description": "Diese Web-Anwendung wurde von der \"Medium-sized Geckos\" Gruppe erstellt, die zum Großteil der Orientierungsphasen-Gruppe \"Team Gecko\" des KIT angehört.",
+        "homepage": "GECKO Homepage"
+      }
+    },
+  "molele": {
+    "greeting": "Hallo, ich bin Molele!",
+    "dontKnow": "Du weißt nicht wo du anfangen sollst?",
+    "letMe": "Lass mich dir helfen!"
+  },
+  "stepper": {
+    "start": "Fang an zu",
+    "configure": {
+      "label": "Konfigurieren",
+      "description": "Konfiguriere eigene Modelle für maschinelles Lernen, um Moleküleigenschaften vorauszusagen",
+      "verb": "konfigurieren"
+    },
+    "train": {
+      "label": "Trainieren",
+      "description": "Trainiere deine eigenen Modelle und verfolge ihren Lernprozess",
+      "verb": "trainieren"
+    },
+    "draw": {
+      "label": "Zeichnen",
+      "description": "Zeichne jegliche Moleküle, die du dir vorstellen kannst, und betrachte sie genauer in 3D",
+      "verb": "zeichnen"
+    },
+    "analyze": {
+      "label": "Analysieren",
+      "description": "Analysiere deine Moleküle mit deinen eigenen Modellen",
+      "verb": "analysieren"
+    },
+    "compare": {
+      "label": "Vergleichen",
+      "description": "Vergleiche deine Moleküle und Modelle mit denen anderer Benutzer",
+      "verb": "vergleichen"
+    }
+  }
+}
