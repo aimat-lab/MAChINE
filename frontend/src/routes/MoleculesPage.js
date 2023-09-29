@@ -121,6 +121,22 @@ export default function MoleculesPage() {
     }
   }
 
+  function deleteFunc(index) {
+    if (index === selectedIndex) {
+      setSelectedIndex(-1)
+      setSelectedMolecule(null)
+    }
+    const molecule = molecules[index]
+    api
+      .deleteMolecule(molecule.smiles)
+      .then(() => {
+        refreshMolecules()
+      })
+      .catch(() => {
+        showSnackMessage(`Can't delete molecule.`, 'error')
+      })
+  }
+
   return (
     <Box sx={{ m: 2 }}>
       <Grid
@@ -151,13 +167,7 @@ export default function MoleculesPage() {
             height={gridHeight}
             forcedSelectedIndex={selectedIndex}
             animateAdd={help.helpMode && !help.madeMolecule}
-            deleteCallback={(index) =>
-              api.deleteMolecule(molecules[index].smiles).then(() => {
-                refreshMolecules()
-                setSelectedIndex(-1)
-                setSelectedMolecule(null)
-              })
-            }
+            deleteCallback={deleteFunc}
           ></SelectionList>
         </Grid>
         {/** The molecule creator (using kekule) on the right of the page **/}

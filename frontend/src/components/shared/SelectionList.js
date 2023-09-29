@@ -76,6 +76,13 @@ export default function SelectionList({
     if (usePopper) handlePopper(null, <div />, false)
   }
 
+  const deleteItem = (ev, index) => {
+    handlePopper(null, <div />, false)
+    deleteCallback(index)
+    ev.stopPropagation()
+    ev.preventDefault()
+  }
+
   return (
     <Card
       className="selection-list"
@@ -131,10 +138,8 @@ export default function SelectionList({
                 <ListItemText primary={element.name} />
                 <IconButton
                   aria-label="delete"
-                  onClick={() => {
-                    deleteCallback(index)
-                    event.stopPropagation()
-                    event.preventDefault()
+                  onClick={(e) => {
+                    deleteItem(e, index)
                   }}
                   sx={{
                     color: theme.darkMode ? '#797979' : '#888888',
