@@ -22,6 +22,15 @@ i18n
   .init({
     fallbackLng: 'en',
     debug: true,
+    ns: [
+      'homePage',
+      'modelsPage',
+      'moleculesPage',
+      'scoreboardsPage',
+      'trainingsPage',
+      'common',
+    ],
+    defaultNS: 'common',
   })
 i18n.changeLanguage('de')
 export default i18n
