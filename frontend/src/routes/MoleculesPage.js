@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { Kekule } from 'kekule'
 import { pulseAnim } from '../utils'
+import { useTranslation } from 'react-i18next'
 
 const gridHeight = '85vh'
 
@@ -40,6 +41,7 @@ export default function MoleculesPage() {
   const [helpPopperContent, setHelpPopperContent] = React.useState('')
   const user = React.useContext(UserContext)
   const help = React.useContext(HelpContext)
+  const { t, i18n } = useTranslation('moleculesPage')
 
   const handleHelpPopperOpen = (event, content) => {
     if (help.helpMode) {
@@ -95,12 +97,14 @@ export default function MoleculesPage() {
 
     if (duplicates.length > 0 && !overwrite) {
       showSnackMessage(
-        `Molecule already saved as "${duplicates[0].name}". Save again to overwrite any duplicates.`,
+        t('moleculesPage.errors.moleculesAlreadySaved', {
+          duplicate: duplicates[0].name,
+        }),
         'warning'
       )
       return true
     } else if (!molName || !smiles || !cml) {
-      showSnackMessage(`Can't save molecule.`, 'error')
+      showSnackMessage(t('moleculesPage.errors.saveFail'), 'error')
     } else {
       // Deletes every name/cml/smiles duplicate
       while (duplicates.length > 0) {
@@ -113,10 +117,7 @@ export default function MoleculesPage() {
           help.setMadeMolecule(true)
         })
         .catch(() =>
-          showSnackMessage(
-            `Can't save invalid molecule. Check for errors in the editor`,
-            'error'
-          )
+          showSnackMessage(t('moleculesPage.errors.invalidMolecule'), 'error')
         )
     }
   }
@@ -135,7 +136,7 @@ export default function MoleculesPage() {
         refreshMolecules()
       })
       .catch(() => {
-        showSnackMessage(`Can't delete molecule.`, 'error')
+        showSnackMessage(t('moleculesPage.errors.deleteFail'), 'error')
       })
   }
 

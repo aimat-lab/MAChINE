@@ -11,7 +11,9 @@
     "errors": {
       "moleculesAlreadySaved":
         "Molecule already saved as {{duplicate}}. Save again to overwrite any duplicates.",
-      "saveFail": "Can't save molecule."
+      "saveFail": "Can't save molecule.",
+      "invalidMolecule" : "Can't save invalid molecule. Check for errors in the editor",
+      "deleteFail": "Can't delete molecule."
     }
   }
 }

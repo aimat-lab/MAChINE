@@ -2,6 +2,7 @@ import React from 'react'
 import { Divider, List, ListItem, ListItemText } from '@mui/material'
 import AnalysisInfo from './AnalysisInfo'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 
 /**
  * a simple list of the trained models attached to the given molecule
@@ -10,18 +11,20 @@ import PropTypes from 'prop-types'
  * @constructor
  */
 export default function MoleculeInfo({ molecule }) {
+  const { t, i18n } = useTranslation('moleculesPage')
+
   return (
     <List sx={{ maxHeight: '55vh', overflow: 'auto' }}>
       {molecule.analyses.length !== 0 ? (
         <>
           <ListItem>
-            <ListItemText primary="Analyzed Properties:" />
+            <ListItemText primary={t('moleculeInfo.heading')} />
           </ListItem>
           <Divider />
         </>
       ) : (
         <ListItem>
-          <ListItemText primary="No analyses available" />
+          <ListItemText primary={t('moleculeInfo.noAnalyses')} />
         </ListItem>
       )}
       {

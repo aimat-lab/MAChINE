@@ -1,0 +1,5 @@
+{
+  "analysisInfo": {
+    "trainedModelId": "$t(common:trainedModelId): {{fittingID}}"
+  }
+}
