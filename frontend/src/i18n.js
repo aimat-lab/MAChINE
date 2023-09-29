@@ -28,6 +28,7 @@ i18n
       'moleculesPage',
       'scoreboardsPage',
       'trainingsPage',
+      'navbar',
       'common',
     ],
     defaultNS: 'common',

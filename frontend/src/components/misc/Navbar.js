@@ -13,29 +13,7 @@ import logo from '../../logo.svg'
 import PropTypes from 'prop-types'
 import HelpModeButton from './HelpModeButton'
 import LanguageSwitcher from './LanguageSwitcher'
-
-const links = {
-  home: {
-    link: '/home',
-    label: 'Home',
-  },
-  models: {
-    link: '/models',
-    label: 'Models',
-  },
-  molecules: {
-    link: '/molecules',
-    label: 'Molecules',
-  },
-  results: {
-    link: '/results',
-    label: 'Scoreboards',
-  },
-  training: {
-    link: '/training',
-    label: 'Training',
-  },
-}
+import { useTranslation } from 'react-i18next'
 
 /**
  * Navigation and utility bar
@@ -51,6 +29,29 @@ export default function Navbar({ logoutFunction, darkModeButton }) {
   const help = React.useContext(HelpContext)
   const [hideTraining, setHideTraining] = React.useState(true)
   const navigate = useNavigate()
+  const { t } = useTranslation('navbar')
+  const links = {
+    home: {
+      link: '/home',
+      label: t('home'),
+    },
+    models: {
+      link: '/models',
+      label: t('models'),
+    },
+    molecules: {
+      link: '/molecules',
+      label: t('molecules'),
+    },
+    results: {
+      link: '/results',
+      label: t('results'),
+    },
+    training: {
+      link: '/training',
+      label: t('training'),
+    },
+  }
 
   // Navigates the user to the start page on page reload
   React.useEffect(() => {
