@@ -10,6 +10,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import PropTypes from 'prop-types'
 import { camelToNaturalString } from '../../utils'
+import { useTranslation } from 'react-i18next'
 
 /**
  * This component is used on MoleculesPage in the DetailsPopper (after clicking on the i-icon of a molecule).
@@ -21,6 +22,7 @@ import { camelToNaturalString } from '../../utils'
  */
 export default function AnalysisInfo({ analysis }) {
   const [expand, setExpand] = React.useState(false)
+  const { t, i18n } = useTranslation('moleculesPage')
   const toggleExpand = () => {
     setExpand(!expand)
   }
@@ -30,7 +32,9 @@ export default function AnalysisInfo({ analysis }) {
       <ListItemButton onClick={() => toggleExpand()}>
         <ListItemText
           primary={analysis.modelName}
-          secondary={`Trained Model ID: ${analysis.fittingID}`}
+          secondary={t('analysisInfo.trainedModelId', {
+            fittingID: analysis.fittingID,
+          })}
         ></ListItemText>
         {expand ? <ExpandLess /> : <ExpandMore />}{' '}
       </ListItemButton>

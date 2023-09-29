@@ -6,5 +6,25 @@
   "buttons": {
     "learnMore": "Mehr erfahren",
     "start": "Start"
+    },
+  "molecules": {
+    "molecule": "Molekül",
+    "molecule_plural": "Moleküle"
+  },
+  "models": {
+    "modelName": "Modellname",
+    "modelId": "Modell-ID",
+    "epochs": "Epochen",
+    "accuracy": "Genauigkeit",
+    "accuracy_r2": "$t(common:models.accuracy) (R²)",
+    "learningRate": "Lernrate",
+    "batchSize": "Batch-Größe",
+    "trainedModelId": "Trainiertes Modell-ID"
+  },
+  "dataset": {
+    "dataset": "Datensatz",
+    "dataset_plural": "Datensätze",
+    "label": "Eigenschaft",
+    "label_plural": "Eigenschaften"
   }
 }

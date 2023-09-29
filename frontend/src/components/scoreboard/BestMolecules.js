@@ -15,6 +15,7 @@ import PropTypes from 'prop-types'
 import AdminPanel from './AdminPanel'
 import UserContext from '../../context/UserContext'
 import DeleteIcon from '@mui/icons-material/Delete'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Displays a table of the best molecules for a selected label.
@@ -28,6 +29,7 @@ export default function BestMolecules({ labels }) {
   const [highlightedRows, setHighlightedRows] = React.useState([])
   const [selectedLabel, setSelectedLabel] = React.useState(labels[0])
   const { adminMode } = React.useContext(UserContext)
+  const { t, i18n } = useTranslation('scoreboardsPage')
 
   /**
    * obtains table data from backend:
@@ -74,7 +76,7 @@ export default function BestMolecules({ labels }) {
   const columns = [
     {
       field: 'username', // the api request delivers an object, the field value is the key to be used
-      headerName: 'Username',
+      headerName: t('common.userName'),
       headerAlign: 'center',
       align: 'center',
       flex: 30, // flex is for scaling, a flex 4 column will be twice as wide as a flex 2 column
@@ -82,7 +84,7 @@ export default function BestMolecules({ labels }) {
     },
     {
       field: 'name',
-      headerName: 'Molecule',
+      headerName: t('molecules.name'),
       headerAlign: 'center',
       align: 'center',
       flex: 40,
@@ -130,7 +132,7 @@ export default function BestMolecules({ labels }) {
     },
     {
       field: 'fittingID',
-      headerName: 'Used Model',
+      headerName: t('molecules.usedModel'),
       headerAlign: 'center',
       align: 'center',
       flex: 30,
@@ -154,7 +156,7 @@ export default function BestMolecules({ labels }) {
       {adminMode ? <AdminPanel deleteAllFunc={deleteAllEntries} /> : null}
       <FormControl sx={{ width: '30vw', minWidth: '100px' }}>
         <InputLabel id="label-selector-label" sx={{ m: 2 }}>
-          Label
+          {t('common.label')}
         </InputLabel>
         <Select
           value={selectedLabel}

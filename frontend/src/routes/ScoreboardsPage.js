@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import BestModels from '../components/scoreboard/BestModels'
 import BestMolecules from '../components/scoreboard/BestMolecules'
 import api from '../api'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Displays a tabbed view of the best models and best molecules
@@ -13,6 +14,7 @@ export default function ScoreboardsPage() {
   const [activeTab, setActiveTab] = React.useState(0)
   const [datasets, setDatasets] = React.useState([])
   const [labels, setLabels] = React.useState(new Set())
+  const { t, i18n } = useTranslation('scoreboardsPage')
 
   React.useEffect(() => {
     api.getDatasets().then((datasetList) => {
@@ -42,8 +44,8 @@ export default function ScoreboardsPage() {
       }}
     >
       <Tabs value={activeTab} onChange={handleChange}>
-        <Tab label="Best Models" />
-        <Tab label="Best Molecules" />
+        <Tab label={t('modelsBoard')} />
+        <Tab label={t('moleculesBoard')} />
       </Tabs>
       <TabPanel value={activeTab} index={0}>
         <BestModels datasets={datasets} />

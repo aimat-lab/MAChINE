@@ -1,0 +1,23 @@
+{
+  "modelsBoard": "Beste Modelle",
+  "moleculesBoard": "Beste Moleküle",
+  "common": {
+    "userName": "Nutzername",
+    "label": "$t(common:dataset.label)"
+  },
+  "molecules": {
+    "molecule": "$t(common:molecules.molecule)",
+    "name": "Molekülname",
+    "usedModel": "Genutztes Modell"
+  },
+  "models": {
+    "dataset": "$t(common:dataset.dataset)",
+    "modelName": "Modellname",
+    "modelId": "Modell-ID",
+    "epochs": "$t(common:models.epochs)",
+    "learningRate": "$t(common:models.learningRate)",
+    "batchSize": "$t(common:models.batchSize)",
+    "accuracy":"$t(common:models.accuracy_r2)",
+    "id": "$t(common:models.trainedModelId)"
+  }
+}

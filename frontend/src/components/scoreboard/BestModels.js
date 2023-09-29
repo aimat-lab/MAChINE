@@ -16,6 +16,7 @@ import UserContext from '../../context/UserContext'
 import DataTable from './DataTable'
 import PropTypes from 'prop-types'
 import AdminPanel from './AdminPanel'
+import { useTranslation } from 'react-i18next'
 
 export default function BestModels({ datasets }) {
   const [selectedDataset, setSelectedDataset] = React.useState({
@@ -28,6 +29,7 @@ export default function BestModels({ datasets }) {
   const [rows, setRows] = React.useState([])
   const training = React.useContext(TrainingContext)
   const { adminMode } = React.useContext(UserContext)
+  const { t, i18n } = useTranslation('scoreboardsPage')
 
   React.useEffect(() => {
     if (datasets.length > 0) {
@@ -69,57 +71,57 @@ export default function BestModels({ datasets }) {
   const fittingColumns = [
     {
       field: 'userName', // the api request delivers an object, the field value is the key to be used
-      headerName: 'Username',
+      headerName: t('common.userName'), // the header name is the name displayed in the table header
       headerAlign: 'center',
       align: 'center',
-      flex: 40, // flex is for scaling, a flex 4 column will be twice as wide as a flex 2 column
+      flex: 35, // flex is for scaling, a flex 4 column will be twice as wide as a flex 2 column
       minWidth: 100,
     },
 
     {
       field: 'modelName',
-      headerName: 'Modelname',
+      headerName: t('models.modelName'),
       headerAlign: 'center',
       align: 'center',
       sortable: true,
-      flex: 40,
+      flex: 35,
       minWidth: 140,
     },
     {
       field: 'epochs',
-      headerName: 'Epochs',
+      headerName: t('models.epochs'),
       headerAlign: 'center',
       align: 'center',
-      flex: 25,
+      flex: 17,
       minWidth: 100,
     },
     {
       field: 'learningRate',
-      headerName: 'Learning Rate',
+      headerName: t('models.learningRate'),
       headerAlign: 'center',
       align: 'center',
-      flex: 25,
+      flex: 27,
       minWidth: 100,
     },
     {
       field: 'batchSize',
-      headerName: 'Batch Size',
+      headerName: t('models.batchSize'),
       headerAlign: 'center',
       align: 'center',
-      flex: 25,
+      flex: 27,
       minWidth: 100,
     },
     {
       field: 'accuracy',
-      headerName: 'Accuracy (R²)',
+      headerName: t('models.accuracy'),
       headerAlign: 'center',
       align: 'center',
-      flex: 25,
+      flex: 27,
       minWidth: 100,
     },
     {
       field: 'id',
-      headerName: 'Trained Model ID',
+      headerName: t('models.id'),
       headerAlign: 'center',
       align: 'center',
       sortable: false,
@@ -198,7 +200,7 @@ export default function BestModels({ datasets }) {
       >
         <FormControl fullWidth>
           <InputLabel id="dataset-selector-label" sx={{ m: 2 }}>
-            Dataset
+            {t('models.dataset')}
           </InputLabel>
           <Select
             value={selectedDatasetName}
@@ -219,7 +221,7 @@ export default function BestModels({ datasets }) {
         </FormControl>
         <FormControl fullWidth>
           <InputLabel id="label-selector-label" sx={{ m: 2 }}>
-            Label
+            {t('common.label')}
           </InputLabel>
           <Select
             value={selectedLabel}
