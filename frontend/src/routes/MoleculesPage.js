@@ -87,20 +87,25 @@ export default function MoleculesPage() {
     setSnackSeverity(severity)
   }
 
-  function saveMolecule(molName, smiles, cml) {
+  function saveMolecule(molName, smiles, cml, overwrite) {
     // Find a duplicate
-    const duplicate = molecules.find((mol) => {
+    const duplicates = molecules.filter((mol) => {
       return mol.smiles === smiles || mol.cml === cml || mol.name === molName
     })
 
-    if (duplicate) {
+    if (duplicates.length > 0 && !overwrite) {
       showSnackMessage(
-        `Molecule already saved as "${duplicate.name}"`,
+        `Molecule already saved as "${duplicates[0].name}". Save again to overwrite any duplicates.`,
         'warning'
       )
+      return true
     } else if (!molName || !smiles || !cml) {
       showSnackMessage(`Can't save molecule.`, 'error')
     } else {
+      // Deletes every name/cml/smiles duplicate
+      while (duplicates.length > 0) {
+        api.deleteMolecule(duplicates.pop().smiles)
+      }
       api
         .addMolecule(smiles, cml, molName)
         .then(() => {
@@ -114,6 +119,24 @@ export default function MoleculesPage() {
           )
         )
     }
+  }
+
+  function deleteFunc(index) {
+    if (index === selectedIndex) {
+      setSelectedIndex(-1)
+      // Tricks Analyze button into disabled state while not triggering the backdrop
+      const copy = new Molecule(null, null, selectedMolecule.cml, null)
+      setSelectedMolecule(copy)
+    }
+    const molecule = molecules[index]
+    api
+      .deleteMolecule(molecule.smiles)
+      .then(() => {
+        refreshMolecules()
+      })
+      .catch(() => {
+        showSnackMessage(`Can't delete molecule.`, 'error')
+      })
   }
 
   return (
@@ -146,6 +169,7 @@ export default function MoleculesPage() {
             height={gridHeight}
             forcedSelectedIndex={selectedIndex}
             animateAdd={help.helpMode && !help.madeMolecule}
+            deleteCallback={deleteFunc}
           ></SelectionList>
         </Grid>
         {/** The molecule creator (using kekule) on the right of the page **/}
@@ -203,6 +227,8 @@ function MoleculeView({ selectedMolecule, onSave }) {
   const theme = useTheme()
   const help = React.useContext(HelpContext)
 
+  const [overwrite, setOverwrite] = React.useState(false)
+
   React.useEffect(() => {
     // Every time a molecule is supposed to be drawn, a new ChemDocument is created. (Easiest solution for handling kekule molecules)
     // Onto the new canvas, the selected molecule is drawn.
@@ -225,11 +251,22 @@ function MoleculeView({ selectedMolecule, onSave }) {
       const molecule = moleculeDoc.getChildAt(0)
       const smiles = Kekule.IO.saveFormatData(molecule, 'smi')
       const cml = Kekule.IO.saveFormatData(molecule, 'cml')
-      onSave(molName, smiles, cml)
-      setMolName('')
+      const duplicate = onSave(molName, smiles, cml, overwrite)
+      if (duplicate && !overwrite) {
+        setOverwrite(true)
+      } else {
+        changeMolName('')
+      }
     } catch (e) {
       onSave('', '', '')
     }
+  }
+
+  function changeMolName(name) {
+    if (overwrite) {
+      setOverwrite(false)
+    }
+    setMolName(name)
   }
 
   /**
@@ -320,7 +357,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
             label="Molecule Name"
             variant="standard"
             value={molName}
-            onChange={(e) => setMolName(e.target.value)}
+            onChange={(e) => changeMolName(e.target.value)}
             inputProps={{ maxLength: 21 }}
           />
           <Button
@@ -331,7 +368,7 @@ function MoleculeView({ selectedMolecule, onSave }) {
             disabled={!molName}
             sx={{ ml: 1 }}
           >
-            Save
+            {overwrite ? 'Overwrite' : 'Save'}
           </Button>
         </Box>
         <Button

@@ -146,8 +146,8 @@ export default function Onboarding({ run, callback }) {
           to select a dataset and configure the model&apos;s training process.
         </div>
       ),
-      target: '.select-training-data',
-      placement: 'top',
+      target: 'body',
+      placement: 'center',
     },
     {
       // Training parameters step

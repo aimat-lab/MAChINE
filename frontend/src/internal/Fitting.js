@@ -9,6 +9,7 @@ class Fitting {
    * @param labels {array} the labels this fitting was trained with
    * @param epochs {number} how many epochs the fitting was trained for
    * @param batchSize {number} size of data batches between each weight update
+   * @param learningRate {number} learning rate of the fitting
    * @param accuracy {number} accuracy of the fitting
    */
   constructor(
@@ -20,6 +21,7 @@ class Fitting {
     labels,
     epochs,
     batchSize,
+    learningRate,
     accuracy
   ) {
     this.id = id
@@ -30,6 +32,7 @@ class Fitting {
     this.labels = labels
     this.epochs = epochs
     this.batchSize = batchSize
+    this.learningRate = learningRate
     this.accuracy = accuracy
   }
 }

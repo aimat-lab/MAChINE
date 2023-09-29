@@ -26,7 +26,9 @@ import { camelToNaturalString } from '../utils'
  * @property {function} stopTraining Stops a running training
  * @property {number} finishedAccuracy Evaluated accuracy provided by backend on training finished
  * @property {function} selectExampleTrainingParameters Sets parameters so the training page works for the tutorial
- * @type {React.Context<{trainingID: string, trainingStatus: boolean, selectedDataset: null, trainingData: {}, setSelectedDataset: setSelectedDataset, setSelectedModel: setSelectedModel, resetContext: resetContext, trainingStopped: boolean, trainingFinished: boolean, setSelectedLabels: setSelectedLabels, selectedEpochs: number, softResetContext: softResetContext, finishedAccuracy: number, setTrainingFinished: setTrainingFinished, setSelectedBatchSize: setSelectedBatchSize, selectExampleTrainingParameters: selectExampleTrainingParameters, selectedLabels: *[], selectedBatchSize: number, stopTraining: stopTraining, setSelectedEpochs: setSelectedEpochs, selectedModel: null}>}
+ * @property {number} selectedLearningRate learning rate for the training process.
+ * @property {function} setSelectedLearningRate Sets the learning rate for the training process.
+ * @type {React.Context<{trainingID: string, trainingStatus: boolean, selectedDataset: null, trainingData: {}, setSelectedDataset: setSelectedDataset, setSelectedModel: setSelectedModel, resetContext: resetContext, trainingStopped: boolean, trainingFinished: boolean, setSelectedLabels: setSelectedLabels, selectedEpochs: number, softResetContext: softResetContext, finishedAccuracy: number, setTrainingFinished: setTrainingFinished, setSelectedBatchSize: setSelectedBatchSize, selectExampleTrainingParameters: selectExampleTrainingParameters, selectedLabels: *[], selectedBatchSize: number, stopTraining: stopTraining, setSelectedEpochs: setSelectedEpochs, selectedModel: null, selectedLearningRate: number, setSelectedLearningRate: setSelectedLearningRate}>}
  */
 const TrainingContext = React.createContext({
   trainingStatus: true,
@@ -51,6 +53,8 @@ const TrainingContext = React.createContext({
   stopTraining: () => {},
   finishedAccuracy: 0,
   selectExampleTrainingParameters: () => {},
+  selectedLearningRate: 0.001,
+  setSelectedLearningRate: () => {},
 })
 
 /**
@@ -71,6 +75,7 @@ export const TrainingProvider = ({ children }) => {
   const [selectedEpochs, setSelectedEpochs] = React.useState(10)
   const [selectedBatchSize, setSelectedBatchSize] = React.useState(64)
   const [finishedAccuracy, setFinishedAccuracy] = React.useState(0)
+  const [selectedLearningRate, setSelectedLearningRate] = React.useState(0.001)
   const [trainingData, dispatchTrainingData] = React.useReducer(
     updateTrainingData,
     {},
@@ -164,6 +169,7 @@ export const TrainingProvider = ({ children }) => {
     setSelectedLabels([])
     setSelectedEpochs(10)
     setSelectedBatchSize(64)
+    setSelectedLearningRate(0.001)
   }
 
   function stopTraining() {
@@ -196,6 +202,8 @@ export const TrainingProvider = ({ children }) => {
         stopTraining,
         finishedAccuracy,
         selectExampleTrainingParameters,
+        selectedLearningRate,
+        setSelectedLearningRate,
       }}
     >
       {children}

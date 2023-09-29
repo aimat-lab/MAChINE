@@ -16,7 +16,7 @@ class Training:
         Class for an active Training process.
         Holds all the information required to train a model and later save it in the storage_handler.
     """
-    def __init__(self, user_id, dataset_id, model_id, labels, epochs, batch_size, fitting_id=None):
+    def __init__(self, user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size, fitting_id=None):
         model_summary = sh.get_model_summary(user_id, model_id)
         base_model = sh.get_base_model(model_summary.get('baseModelID'))
 
@@ -24,6 +24,7 @@ class Training:
         self.dataset_id = dataset_id
         self.model_id = model_id
         self.batch_size = int(batch_size)
+        self.learning_rate = learning_rate
         self.labels = labels
         self.model, ds = self.create_model_and_set(
             base_model.get('type'),
@@ -42,11 +43,12 @@ class Training:
 
     def create_model_and_set(self, model_type, parameters, dataset, labels, metrics):
         # decode loss, optimizer and metrics from strings
+        optimizer = mld.optimizers.get(parameters.get('optimizer'))(learning_rate=self.learning_rate)
         return mld.creation_functions.get(model_type)(parameters,
                                                       dataset,
                                                       labels,
                                                       mld.losses.get(parameters.get('lossFunction'))(),
-                                                      mld.optimizers.get(parameters.get('optimizer'))(),
+                                                      optimizer,
                                                       [mld.metrics.get(metric)() for metric in metrics],
                                                       self.batch_size)
 
@@ -66,7 +68,8 @@ class Training:
 
     def start_training(self):
         # Trains the model
-        self.model.fit(self.training_set, validation_data=self.validation_set, epochs=self.epochs,
+        self.model.fit(self.training_set, validation_data=self.validation_set,
+                       epochs=self.epochs,
                        batch_size=self.batch_size,
                        callbacks=[LiveStats(self.user_id)],
                        initial_epoch=self.initial_epoch,
@@ -89,21 +92,22 @@ class Training:
         return self.model.stop_training
 
 
-def train(user_id, dataset_id, model_id, labels, epochs, batch_size, fitting_id=None):
+def train(user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size, fitting_id=None):
     with lock:
         if is_training_running(user_id):  # Change this to allow for more than one training at the same time
             return False
         # Placeholder here to ensure no other training can be started while we're initializing, as this takes a while
         live_trainings[user_id] = {'Placeholder'}
     try:
-        new_training = Training(user_id, dataset_id, model_id, labels, epochs, batch_size, fitting_id)
+        new_training = Training(user_id, dataset_id, model_id, labels, epochs, learning_rate, batch_size, fitting_id)
         with lock:
             live_trainings[user_id] = new_training
         new_training.start_training()
 
-    except (TypeError, AttributeError, ValueError):
+    except (TypeError, AttributeError, ValueError) as e:
         with lock:
             del live_trainings[user_id]
+        print(e)
         api.notify_training_error(user_id)
         return False
 
@@ -114,7 +118,7 @@ def continue_training(user_id, fitting_id, epochs):
     summary = sh.get_fitting_summary(user_id, fitting_id)
     if summary:
         train(user_id, summary.get('datasetID'), summary.get('modelID'), summary.get('labels'), epochs,
-              summary.get('batchSize'), fitting_id)
+              summary.get('learningRate'), summary.get('batchSize'), fitting_id)
     return False
 
 
@@ -143,6 +147,8 @@ def analyze(user_id, fitting_id, smiles):
     # Gets required objects
     fitting = sh.get_fitting(user_id, fitting_id)
     fitting_summary = sh.get_fitting_summary(user_id, fitting_id)
+    if not fitting or not fitting_summary:
+        return None, 404
     model_summary = sh.get_model_summary(user_id, fitting_summary.get('modelID'))
     base_model = sh.get_base_model(model_summary.get('baseModelID'))
 
@@ -203,6 +209,7 @@ class LiveStats(keras.callbacks.Callback):
                                                 finished_training.dataset_id,
                                                 finished_training.labels,
                                                 self.epochs_trained,
+                                                finished_training.learning_rate,
                                                 accuracy,
                                                 finished_training.batch_size,
                                                 finished_training.model_id,

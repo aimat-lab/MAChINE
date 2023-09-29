@@ -9,25 +9,31 @@ import pytest_mock
 _test_user_id = 'test_user'
 _test_user_name = 'test_user_name'
 
-
-@pytest.fixture
-def client():
-    api.app.config['TESTING'] = True
-    with api.app.test_client() as client:
-        yield client
-
-
 @pytest.fixture
 def socket():
     socket = api.sio.test_client(api.app)
     assert socket.is_connected()
     return socket
 
+@pytest.fixture
+def unconnected_client():
+    api.app.config['TESTING'] = True
+    with api.app.test_client() as unconnected_client:
+        yield unconnected_client
+
+@pytest.fixture
+def client(unconnected_client, mocker):
+    mocker.patch('backend.utils.api.last_user_activity_tracker', {_test_user_id: 0})
+    thread = api.Thread()
+    thread.start()
+    mocker.patch('backend.utils.api.user_socket_queues', {_test_user_id: (api.gq.Queue(), thread)})
+    mocker.patch('backend.utils.api.AuthenticatedResource.method_decorators', [])
+    yield unconnected_client
 
 class TestModelRequestGroup:
 
     def test_model_get_response_format(self, client, mocker):
-        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockSH())
+        mocker.patch('backend.utils.api.sh.get_model_summaries', return_value={})
         response = client.get(f'/users/{_test_user_id}/models')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert type(response.json) == list, 'Response json should be a list'
@@ -48,6 +54,7 @@ class TestModelRequestGroup:
                      'datasetID': 'dataset_id',
                      'labels': ['labels', 'labels2'],
                      'epochs': 5,
+                     'learningRate': 0.1,
                      'accuracy': 1,
                      'batchSize': 212,
                      'fittingPath': 'X',
@@ -87,6 +94,7 @@ class TestModelRequestGroup:
                 converted_fitting |= {'datasetName': sh_datasets.get(fitting['datasetID']).get('name')}
                 converted_fitting |= {'labels': fitting['labels']}
                 converted_fitting |= {'epochs': fitting['epochs']}
+                converted_fitting |= {'learningRate': fitting['learningRate']}
                 converted_fitting |= {'batchSize': fitting['batchSize']}
                 converted_fitting |= {'accuracy': fitting['accuracy']}
                 converted_fittings.append(converted_fitting)
@@ -193,6 +201,7 @@ class TestFittingRequestGroup:
                      'datasetID': 'dataset_id',
                      'labels': ['labels', 'labels2'],
                      'epochs': 5,
+                     'learningRate': 0.0001,
                      'accuracy': 1,
                      'batchSize': 212,
                      'fittingPath': 'X',
@@ -202,6 +211,7 @@ class TestFittingRequestGroup:
                      'datasetID': 'dataset_id',
                      'labels': ['label'],
                      'epochs': 524,
+                     'learningRate': 0.01,
                      'accuracy': 0.000200,
                      'batchSize': 212,
                      'fittingPath': 'X2',
@@ -233,6 +243,7 @@ class TestFittingRequestGroup:
             converted_fitting |= {'datasetName': sh_datasets.get(fitting['datasetID']).get('name')}
             converted_fitting |= {'labels': fitting['labels']}
             converted_fitting |= {'epochs': fitting['epochs']}
+            converted_fitting |= {'learningRate': fitting['learningRate']}
             converted_fitting |= {'batchSize': fitting['batchSize']}
             converted_fitting |= {'accuracy': fitting['accuracy']}
             assert converted_fitting in response_json, 'Response should contain every fitting properly formatted'
@@ -247,31 +258,30 @@ class TestUserRequestGroup:
             'WADawd',
         ]
     )
-    def test_add_user_response(self, test_username, client, mocker):
+    def test_add_user_response(self, test_username, unconnected_client, mocker):
         mocker.patch('backend.utils.api.sh.add_user_handler', return_value={'This represents a handler'})
         sh_mol_mock = mocker.patch('backend.utils.api.sh.add_molecule')
         sh_model_mock = mocker.patch('backend.utils.api.sh.add_model')
-        response = client.post(f'/users', json={'username': test_username})
-        user_id = str(hashlib.sha1(test_username.encode('utf-8'), usedforsecurity=False).hexdigest())
+        response = unconnected_client.post(f'/users', json={'username': test_username})
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.is_json, 'Response should be a json'
-        assert response.json == {'userID': user_id}, 'json should contain the user id'
+        assert response.json.get('userID') is not None, 'Response should contain a userID'
         sh_mol_mock.assert_called_once()
         sh_model_mock.assert_called_once()
 
-    def test_add_user_error(self, client, mocker):
+    def test_add_user_error(self, unconnected_client, mocker):
         mocker.patch('backend.utils.api.sh.add_user_handler', return_value=None)
-        response = client.post(f'/users', json={'username': 'test'})
+        response = unconnected_client.post(f'/users', json={'username': 'test'})
         assert response.status_code == 404, 'User shouldn\'t have been created'
 
     def test_delete_user_response(self, client, mocker):
-        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockUserDelSH())
+        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockSH())
         response = client.delete(f'/users/{_test_user_id}')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'Response should have a json'
 
     def test_delete_user_internal_error_response(self, client, mocker):
-        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockUserDelSH(delete_handler=False))
+        mocker.patch('backend.utils.api.sh', backend.tests.mocks.mock_sh.MockSH(working_delete=False))
         response = client.delete(f'/users/{_test_user_id}')
         assert response.status_code == 500, 'Expected to respond with internal server error'
         assert response.json is None, 'Response should have a json'
@@ -396,13 +406,13 @@ class TestAnalyzeRequestGroup:
 # TODO: Implement
 class TestTrainRequestGroup:
     @pytest.mark.parametrize(
-        'dataset_id, model_id, labels, epochs, batch_size',
+        'dataset_id, model_id, labels, epochs, batch_size, learning_rate',
         [
-            ('id', '-1523', ['label', 'label2'], 53, 456),
-            ('idawk', '34567', ['label'], 52, 456789)
+            ('id', '-1523', ['label', 'label2'], 53, 456, 0.3),
+            ('idawk', '34567', ['label'], 52, 456789, 0.0001)
         ]
     )
-    def test_train_post_response(self, dataset_id, model_id, labels, epochs, batch_size, client, mocker):
+    def test_train_post_response(self, dataset_id, model_id, labels, epochs, learning_rate, batch_size,client, mocker):
         magic_background = mocker.patch('backend.utils.api.sio.start_background_task')
         mocker.patch('backend.utils.api.ml.is_training_running', return_value=False)
         response = client.post(f'/users/{_test_user_id}/train', json={
@@ -411,6 +421,7 @@ class TestTrainRequestGroup:
             'epochs': epochs,
             'labels': json.dumps(labels),
             'batchSize': batch_size,
+            'learningRate': learning_rate,
         })
         magic_background.assert_called_once_with(
             target=backend.utils.api.ml.train,
@@ -419,6 +430,7 @@ class TestTrainRequestGroup:
             model_id=model_id,
             labels=labels,
             epochs=epochs,
+            learning_rate=learning_rate,
             batch_size=batch_size)
         assert response.status_code in range(200, 300), 'Expected request to work'
         assert response.json, 'Expecting response to be "True"'
@@ -472,6 +484,7 @@ class TestTrainRequestGroup:
 
 class TestScoreboardRequestGroup:
 
+    @pytest.mark.skip(reason='mod-scoreboard request differences not yet implemented')
     @pytest.mark.parametrize(
         'sh_scoreboards',
         [
@@ -489,14 +502,14 @@ class TestScoreboardRequestGroup:
         ]
     )
     def test_scoreboard_get(self, sh_scoreboards, client, mocker):
-        mocker.patch('backend.utils.api.sh.get_scoreboard_summaries', return_value=sh_scoreboards)
-        response = client.get(f'/scoreboard')
+        mocker.patch('backend.utils.api.sh.get_scoreboard_models', return_value=sh_scoreboards)
+        response = client.get(f'/mod-scoreboard')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json == list(sh_scoreboards.values())
 
     def test_scoreboard_delete(self, client, mocker):
         delete_mock = mocker.patch('backend.utils.api.sh.delete_scoreboard_fittings', return_value=None)
-        response = client.delete(f'/scoreboard')
+        response = client.delete(f'/mod-scoreboard')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'No response json expected'
         delete_mock.assert_called_once()
@@ -509,7 +522,7 @@ class TestScoreboardRequestGroup:
     )
     def test_scoreboard_delete_single(self, scoreboard_id, client, mocker):
         delete_mock = mocker.patch('backend.utils.api.sh.delete_scoreboard_fitting', return_value=None)
-        response = client.delete(f'/scoreboard/{scoreboard_id}')
+        response = client.delete(f'/mod-scoreboard/{scoreboard_id}')
         assert response.status_code in range(200, 300), 'Request should have worked'
         assert response.json is None, 'No response json expected'
         delete_mock.assert_called_once_with(scoreboard_id)

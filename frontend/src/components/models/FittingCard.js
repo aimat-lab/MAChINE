@@ -67,6 +67,9 @@ export default function FittingCard({
                 Epochs: {fitting.epochs}
               </Typography>
               <Typography variant="subtitle1" component="h4">
+                Learning Rate: {fitting.learningRate}
+              </Typography>
+              <Typography variant="subtitle1" component="h4">
                 Batch Size: {fitting.batchSize}
               </Typography>
               <Typography variant="subtitle1" component="h4">

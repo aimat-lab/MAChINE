@@ -22,11 +22,12 @@ export default function TrainingParameterFields({
   const training = React.useContext(TrainingContext)
   const [epochsError, setEpochsError] = React.useState(false)
   const [batchSizeError, setBatchSizeError] = React.useState(false)
+  const [learningRateError, setLearningRateError] = React.useState(false)
   const initialMount = React.useRef(true)
 
   React.useEffect(() => {
-    errorCallback(epochsError || batchSizeError)
-  }, [epochsError, batchSizeError])
+    errorCallback(epochsError || batchSizeError || learningRateError)
+  }, [epochsError, batchSizeError, learningRateError])
 
   // check epochs on change
   React.useEffect(() => {
@@ -55,11 +56,32 @@ export default function TrainingParameterFields({
     }
   }, [training.selectedBatchSize])
 
+  React.useEffect(() => {
+    checkLearningRate(training.selectedLearningRate)
+    // this is important, don't remove!
+    if (initialMount.current) {
+      initialMount.current = false
+    } else {
+      training.setTrainingFinished(false)
+    }
+    return () => {
+      training.setTrainingFinished(false)
+    }
+  }, [training.selectedLearningRate])
+
   const checkBatchSize = (batchSize) => {
     if (batchSize > 0) {
       setBatchSizeError(false)
     } else {
       setBatchSizeError(true)
+    }
+  }
+
+  const checkLearningRate = (learningRate) => {
+    if (learningRate > 0 && learningRate < 5) {
+      setLearningRateError(false)
+    } else {
+      setLearningRateError(true)
     }
   }
 
@@ -73,15 +95,25 @@ export default function TrainingParameterFields({
     batchSize: (target) => {
       helpOpen(
         target,
-        "The batch size determines how often the net's parameters are adjusted. The smaller the batch size, the more often that's the case!"
+        "The batch size determines how often the model's parameters are adjusted. The smaller the batch size, the more often that's the case!"
+      )
+    },
+    learningRate: (target) => {
+      helpOpen(
+        target,
+        'The learning rate determines how fast the model tries to learn. Too small and your model will never learn, too big and it will never stop!'
       )
     },
   }
 
   return (
-    <Box display="flex" flexDirection="row" className="training-parameters">
+    <Box
+      sx={{ mt: 3, mx: 3 }}
+      display="flex"
+      flexDirection="row"
+      className="training-parameters"
+    >
       <TextField
-        sx={{ mx: 3, mt: 3, flexGrow: 1 }}
         required
         id="epochs"
         label="Epochs"
@@ -95,7 +127,22 @@ export default function TrainingParameterFields({
         onMouseLeave={helpClose}
       />
       <TextField
-        sx={{ mx: 3, mt: 3, flexGrow: 1 }}
+        sx={{ mx: 1 }}
+        required
+        id="learningrate"
+        label="Learning Rate"
+        type="number"
+        value={training.selectedLearningRate}
+        disabled={training.trainingStatus}
+        onChange={(event) => {
+          training.setSelectedLearningRate(event.target.value)
+        }}
+        error={learningRateError}
+        helperText={learningRateError ? 'Must be 5 > rate > 0!' : ' '}
+        onMouseOver={(e) => hoverFuncs.learningRate(e.currentTarget)}
+        onMouseLeave={helpClose}
+      />
+      <TextField
         required
         id="batchsize"
         label="Batch Size"
@@ -115,7 +162,7 @@ export default function TrainingParameterFields({
 TrainingParameterFields.propTypes = {
   helpOpen: PropTypes.func,
   helpClose: PropTypes.func,
-  epochs: PropTypes.number.isRequired,
+  epochs: PropTypes.any.isRequired,
   setEpochs: PropTypes.func.isRequired,
   errorCallback: PropTypes.func.isRequired,
 }

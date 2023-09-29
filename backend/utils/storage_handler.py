@@ -12,6 +12,9 @@ __all__ = ['add_analysis',
            'add_model',
            'add_molecule',
            'add_user_handler',
+           'delete_fitting',
+           'delete_model',
+           'delete_molecule',
            'delete_scoreboard_fitting',
            'delete_scoreboard_fittings',
            'delete_user_handler',
@@ -69,6 +72,10 @@ class UserDataStorageHandler:
         self.molecules[smiles] = {'name': name, 'cml': cml, 'analyses': dict()}
         self.__save_summary_file('molecules.json', self.molecules)
 
+    def delete_molecule(self, smiles):
+        self.molecules.pop(smiles, None)
+        self.__save_summary_file('molecules.json', self.molecules)
+
     def get_molecules(self):
         return self.molecules
 
@@ -90,6 +97,12 @@ class UserDataStorageHandler:
         self.__save_summary_file('models.json', self.model_summaries)
         return model_id
 
+    def delete_model(self, model_id):
+        model_summary = self.model_summaries.pop(model_id, {})
+        self.__save_summary_file('models.json', self.model_summaries)
+        for fitting_id in model_summary.get('fittingIDs'):
+            self.delete_fitting(fitting_id)
+
     def get_model_summary(self, model_id):
         return self.model_summaries.get(model_id)
 
@@ -98,7 +111,7 @@ class UserDataStorageHandler:
 
     # Fittings
     # Saves a fitting, creates a summary, updates the model summary
-    def add_fitting(self, dataset_id, labels, epochs, accuracy, batch_size, model_id, fitting):
+    def add_fitting(self, dataset_id, labels, epochs, learning_rate, accuracy, batch_size, model_id, fitting):
         fitting_id = shortuuid.uuid()
         path = self.save_fitting(fitting_id, fitting)
         if path is None:
@@ -106,6 +119,7 @@ class UserDataStorageHandler:
         self.fitting_summaries[fitting_id] = {'datasetID': dataset_id,
                                               'labels': labels,
                                               'epochs': epochs,
+                                              'learningRate': learning_rate,
                                               'accuracy': accuracy,
                                               'batchSize': batch_size,
                                               'fittingPath': str(path),
@@ -132,6 +146,14 @@ class UserDataStorageHandler:
         summary['accuracy'] = accuracy
         self.__save_summary_file('fittings.json', self.fitting_summaries)
         return fitting_id
+
+    def delete_fitting(self, fitting_id):
+        fitting_summary = self.fitting_summaries.pop(fitting_id, None)
+        self.__save_summary_file('fittings.json', self.fitting_summaries)
+        if fitting_summary:
+            path = Path(fitting_summary.get('fittingPath', 'fakestPathOfAll'))
+            if path.exists():
+                shutil.rmtree(path)
 
     def save_fitting(self, fitting_id, fitting):
         path = self.user_fittings_path / f'{fitting_id}_fitting'
@@ -259,6 +281,9 @@ class StorageHandler:
     def add_molecule(self, user_id, smiles, cml, name):
         self.get_user_handler(user_id).add_molecule(smiles, cml, name)
 
+    def delete_molecule(self, user_id, smiles):
+        self.get_user_handler(user_id).delete_molecule(smiles)
+
     def get_molecules(self, user_id):
         return self.get_user_handler(user_id).get_molecules()
 
@@ -276,6 +301,9 @@ class StorageHandler:
     def add_model(self, user_id, name, parameters, base_model_id):
         return self.get_user_handler(user_id).add_model(name, parameters, base_model_id)
 
+    def delete_model(self, user_id, model_id):
+        return self.get_user_handler(user_id).delete_model(model_id)
+
     def get_model_summary(self, user_id, model_id):
         return self.get_user_handler(user_id).get_model_summary(model_id)
 
@@ -284,8 +312,8 @@ class StorageHandler:
 
     # Fittings
     # fitting is the actual, trained model, not a summary
-    def add_fitting(self, user_id, dataset_id, labels, epochs, accuracy, batch_size, model_id, fitting):
-        fitting_id = self.get_user_handler(user_id).add_fitting(dataset_id, labels, epochs, accuracy, batch_size,
+    def add_fitting(self, user_id, dataset_id, labels, epochs, learning_rate, accuracy, batch_size, model_id, fitting):
+        fitting_id = self.get_user_handler(user_id).add_fitting(dataset_id, labels, epochs, learning_rate, accuracy, batch_size,
                                                                 model_id,
                                                                 fitting)
         # Creates the scoreboard fitting summary, if username isn't None
@@ -301,6 +329,7 @@ class StorageHandler:
                                                          'name'),
                                                      'labels': labels,
                                                      'epochs': epochs,
+                                                     'learningRate': learning_rate,
                                                      'batchSize': batch_size,
                                                      'accuracy': accuracy}
         self.__save_scoreboard_summaries()
@@ -315,6 +344,11 @@ class StorageHandler:
             scoreboard_fitting['accuracy'] = accuracy
             self.__save_scoreboard_summaries()
         return fitting_id
+
+    def delete_fitting(self, user_id, fitting_id):
+        self.get_user_handler(user_id).delete_fitting(fitting_id)
+        self.scoreboard_summaries.pop(fitting_id, None)
+        self.__save_scoreboard_summaries()
 
     def get_fitting(self, user_id, fitting_id):
         return self.get_user_handler(user_id).get_fitting(fitting_id)
@@ -446,6 +480,9 @@ add_fitting = _inst.add_fitting
 add_model = _inst.add_model
 add_molecule = _inst.add_molecule
 add_user_handler = _inst.add_user_handler
+delete_fitting = _inst.delete_fitting
+delete_model = _inst.delete_model
+delete_molecule = _inst.delete_molecule
 delete_scoreboard_fitting = _inst.delete_scoreboard_fitting
 delete_scoreboard_fittings = _inst.delete_scoreboard_fittings
 delete_scoreboard_molecule = _inst.delete_scoreboard_molecule

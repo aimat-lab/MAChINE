@@ -1,6 +1,6 @@
 class MockTraining:
     def __init__(self, user_id=None, dataset_id=None, model_id=None, batch_size=None, labels=None, model=None,
-                 datasets=None, initial_epoch=None, fitting_id=None, epochs=None, accuracy=None):
+                 datasets=None, initial_epoch=None, fitting_id=None, epochs=None, accuracy=None, learning_rate=None):
         if datasets is None:
             datasets = [None, None, None]
 
@@ -15,6 +15,7 @@ class MockTraining:
         self.fitting_id = fitting_id
         self.epochs = epochs
         self.accuracy = accuracy
+        self.learning_rate = learning_rate
 
     def evaluate_model(self):
         return self.accuracy

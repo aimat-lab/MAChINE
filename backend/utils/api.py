@@ -53,6 +53,7 @@ parser.add_argument('accuracy', type=float)  # Not used
 parser.add_argument('batchSize', type=int)
 parser.add_argument('baseModelID')
 parser.add_argument('parameters', type=dict)
+parser.add_argument('learningRate', type=float)
 
 
 def authenticate(func):
@@ -113,6 +114,7 @@ class Models(AuthenticatedResource):
                             'datasetName': dataset['name'],
                             'labels': fitting['labels'],
                             'epochs': fitting['epochs'],
+                            'learningRate': fitting['learningRate'],
                             'batchSize': fitting['batchSize'],
                             'accuracy': fitting['accuracy']
                         }
@@ -137,6 +139,14 @@ class Models(AuthenticatedResource):
         args = parser.parse_args()
         return sh.add_model(user_id, args['name'], args['parameters'], args['baseModelID']), 201
 
+    def delete(self, user_id, model_id):
+        """
+        Delete a model from storage using user ID and model ID
+        :param user_id: string containing user ID
+        :param model_id: string containing model ID
+        :return: string of deleted model's ID
+        """
+        return sh.delete_model(user_id, model_id), 200
 
 class Molecules(AuthenticatedResource):
     """
@@ -195,6 +205,16 @@ class Molecules(AuthenticatedResource):
             return sh.add_molecule(user_id, args['smiles'], args['cml'], args['name']), 201
         return None, 422
 
+    def delete(self, user_id, b64_smiles):
+        """
+        Delete molecule with given smiles code from data of user with given ID
+        :param user_id: string containing user ID
+        :param b64_smiles: string containing smiles code encoded with b64
+        :return: appropriate code
+        """
+        smiles = base64.b64decode(b64_smiles).decode('utf8')
+        return sh.delete_molecule(user_id, smiles), 200
+
 
 class Molecule(Resource):
     """
@@ -245,12 +265,21 @@ class Fittings(AuthenticatedResource):
                     'datasetName': current_dataset['name'],
                     'labels': current_fitting['labels'],
                     'epochs': current_fitting['epochs'],
+                    'learningRate': current_fitting['learningRate'],
                     'batchSize': current_fitting['batchSize'],
                     'accuracy': current_fitting['accuracy']
                 }
             )
         return processed_fittings
 
+    def delete(self, user_id, fitting_id):
+        """
+        Delete fitting with given ID from data of user with given ID
+        :param user_id: string containing user ID
+        :param fitting_id: string containing fitting ID
+        :return: appropriate code
+        """
+        return sh.delete_fitting(user_id, fitting_id), 200
 
 class ModelScoreboard(Resource):
     """
@@ -494,6 +523,7 @@ class Train(AuthenticatedResource):
                                   model_id=args['modelID'],
                                   labels=labels,
                                   epochs=args['epochs'],
+                                  learning_rate=args['learningRate'],
                                   batch_size=args['batchSize'])
         return True, 202
 
@@ -531,9 +561,9 @@ class Train(AuthenticatedResource):
 
 # Actually set up the Api resource routing here
 api.add_resource(User, '/users', '/users/<user_id>')
-api.add_resource(Models, '/users/<user_id>/models')
-api.add_resource(Molecules, '/users/<user_id>/molecules')
-api.add_resource(Fittings, '/users/<user_id>/fittings')
+api.add_resource(Models, '/users/<user_id>/models', '/users/<user_id>/models/<model_id>')
+api.add_resource(Molecules, '/users/<user_id>/molecules', '/users/<user_id>/molecules/<b64_smiles>')
+api.add_resource(Fittings, '/users/<user_id>/fittings', '/users/<user_id>/fittings/<fitting_id>')
 # Training & Analyzing
 api.add_resource(Analyze, '/users/<user_id>/analyze')
 api.add_resource(Train, '/users/<user_id>/train')
@@ -704,7 +734,7 @@ def run(debug=True):
                 'activation': 'relu',
             },
         ], 'lossFunction': 'Huber Loss', 'optimizer': 'Stochastic Gradient Descent'}, '1')
-        ml.train(test_user, '2', model_id, ['lumo', 'homo'], 7, 64)
+        ml.train(test_user, '2', model_id, ['lumo', 'homo'], 7, 0.2, 64)
         model_id_2 = sh.add_model(test_user, 'MyCoolSecondModel',
                                   {'lossFunction': 'Mean Squared Error', 'optimizer': 'Adam', 'embeddingDimension': 128,
                                    'readoutSize': 1,

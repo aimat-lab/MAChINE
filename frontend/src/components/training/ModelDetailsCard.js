@@ -26,7 +26,7 @@ export default function ModelDetailsCard({
 }) {
   return (
     <Card
-      sx={{ m: 3 }}
+      sx={{ m: 3, mt: 0 }}
       onMouseOver={(e) => {
         hoverFunc(e.currentTarget)
       }}
@@ -67,7 +67,14 @@ ModelDetailsCard.propTypes = {
 }
 
 ModelDetailsCard.defaultProps = {
-  selectedModel: new ModelConfig('ERROR', 'ERROR', 'ERROR', 'ERROR', {}, []),
+  selectedModel: new ModelConfig(
+    'ERROR',
+    'Example Model',
+    'ERROR',
+    'Example Base Model ID',
+    { 'Up to': ' you' },
+    []
+  ),
 }
 
 /**

@@ -14,6 +14,7 @@ import {
   DialogTitle,
   Divider,
   Grid,
+  IconButton,
   List,
   ListItem,
   ListItemButton,
@@ -30,14 +31,22 @@ import TrainingContext from '../context/TrainingContext'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { camelToNaturalString, pulseAnim } from '../utils'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 const gridHeight = '80vh'
 /**
  * Depicts a list of saved models and shows a description of the selected model on click
  * @param modelList list of models depicted
  * @param initSelectedIndex initially selected index of modelList
+ * @param deleteModel function to be called when deleting a model
+ * @param deleteFitting function to be called when deleting a fitting
  */
-export default function ModelsPage({ modelList, initSelectedIndex }) {
+export default function ModelsPage({
+  modelList,
+  initSelectedIndex,
+  deleteModel,
+  deleteFitting,
+}) {
   const [selectedIndex, setSelectedIndex] = React.useState(initSelectedIndex)
   const [showDialog, setShowDialog] = React.useState(false)
   const [helpAnchorEl, setHelpAnchorEl] = React.useState(null)
@@ -110,6 +119,7 @@ export default function ModelsPage({ modelList, initSelectedIndex }) {
             addFunc={initiateCreation}
             height={gridHeight}
             animateAdd={help.helpMode && !help.madeModel}
+            deleteCallback={deleteModel}
           />
         </Grid>
         <Grid item xs={9}>
@@ -118,6 +128,7 @@ export default function ModelsPage({ modelList, initSelectedIndex }) {
             onActiveTraining={handleOpenDialog}
             hoverFunc={handleHelpPopperOpen}
             leaveFunc={handleHelpPopperClose}
+            deleteFitting={deleteFitting}
           />
         </Grid>
       </Grid>
@@ -154,6 +165,8 @@ export default function ModelsPage({ modelList, initSelectedIndex }) {
 ModelsPage.propTypes = {
   modelList: PropTypes.array.isRequired,
   initSelectedIndex: PropTypes.number,
+  deleteModel: PropTypes.func.isRequired,
+  deleteFitting: PropTypes.func.isRequired,
 }
 
 ModelsPage.defaultProps = {
@@ -166,6 +179,7 @@ ModelsPage.defaultProps = {
  * @param onActiveTraining callback for attempting to initialize new training while another is still running
  * @param hoverFunc callback for hovering over description
  * @param leaveFunc callback for mouse pointer leaving description
+ * @param deleteFitting callback for deleting a fitting
  * @returns {JSX.Element}
  */
 function ModelDescription({
@@ -173,6 +187,7 @@ function ModelDescription({
   onActiveTraining,
   hoverFunc,
   leaveFunc,
+  deleteFitting,
 }) {
   const [open, setOpen] = React.useState([])
   const [globalOpen, setGlobalOpen] = React.useState(false)
@@ -284,6 +299,7 @@ function ModelDescription({
                   index={index}
                   open={open}
                   setOpen={setOpen}
+                  deleteFitting={deleteFitting}
                 ></RenderFitting>
               ))}
             </List>
@@ -316,6 +332,7 @@ ModelDescription.propTypes = {
   hoverFunc: PropTypes.func,
   leaveFunc: PropTypes.func,
   fittingsLength: PropTypes.number,
+  deleteFitting: PropTypes.func.isRequired,
 }
 
 /**
@@ -326,6 +343,7 @@ ModelDescription.propTypes = {
  * @param index index of fitting
  * @param open array of boolean values representing which fittings are open
  * @param setOpen callback to signal change of open array
+ * @param deleteFitting callback to delete fitting
  * @returns {JSX.Element}
  */
 function RenderFitting({
@@ -335,6 +353,7 @@ function RenderFitting({
   index,
   open,
   setOpen,
+  deleteFitting,
 }) {
   const toggleOpen = () => {
     const newOpen = [...open]
@@ -343,66 +362,79 @@ function RenderFitting({
   }
   const theme = useTheme()
   return (
-    <ListItem
-      key={fitting.id}
-      onMouseOver={(e) => {
-        hoverFunc(
-          e,
-          'Here you can see which dataset was used to train this trained model, how long the model was trained (epochs), how big the data bundles were that were fed into the network (batch size), and how good it is (accuracy).'
-        )
-      }}
-      onMouseLeave={leaveFunc}
-    >
-      <Box sx={{ width: 1 }}>
-        <ListItemButton onClick={() => toggleOpen()}>
-          {open[index] ? <ExpandLess /> : <ExpandMore />}
-          <ListItemText
-            primary={`Dataset: ${fitting.datasetName} #${fitting.datasetID}`}
-            secondary={`Trained model ID: ${fitting.id}`}
-            sx={{ color: theme.palette.primary.main }}
-          ></ListItemText>
-        </ListItemButton>
-        <Collapse
-          in={open[index]}
-          timeout="auto"
-          mountOnEnter
-          unmountOnExit
-          orientation="vertical"
-        >
-          <List sx={{ pl: 4 }}>
-            <ListItem>
-              <ListItemText
-                sx={{ color: theme.palette.primary.main }}
-                primary="Label: "
-              ></ListItemText>
-              {camelToNaturalString(fitting.labels.join(', '))}
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                sx={{ color: theme.palette.primary.main }}
-                primary="Epochs: "
-              ></ListItemText>
-              {fitting.epochs}
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                sx={{ color: theme.palette.primary.main }}
-                primary="Batch Size: "
-              ></ListItemText>
-              {fitting.batchSize}
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                sx={{ color: theme.palette.primary.main }}
-                primary="Accuracy (R²):"
-              ></ListItemText>
-              {fitting.accuracy}%
-            </ListItem>
-          </List>
-        </Collapse>
-        <Divider />
-      </Box>
-    </ListItem>
+    <>
+      <ListItem
+        key={fitting.id}
+        onMouseOver={(e) => {
+          hoverFunc(
+            e,
+            'Here you can see which dataset was used to train this trained model, how long the model was trained (epochs), how big the data bundles were that were fed into the network (batch size), and how good it is (accuracy).'
+          )
+        }}
+        secondaryAction={
+          <IconButton
+            onClick={() => deleteFitting(fitting.id)}
+            sx={{
+              color: theme.darkMode ? '#797979' : '#888888',
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        }
+        onMouseLeave={leaveFunc}
+      >
+        <Box sx={{ width: 1 }}>
+          <ListItemButton onClick={() => toggleOpen()}>
+            {open[index] ? <ExpandLess /> : <ExpandMore />}
+            <ListItemText
+              primary={`Dataset: ${fitting.datasetName} #${fitting.datasetID}`}
+              secondary={`Trained model ID: ${fitting.id}`}
+              sx={{ color: theme.palette.primary.main }}
+            ></ListItemText>
+          </ListItemButton>
+          <Collapse
+            in={open[index]}
+            timeout="auto"
+            mountOnEnter
+            unmountOnExit
+            orientation="vertical"
+          >
+            <List sx={{ pl: 4 }}>
+              <ListItem>
+                <ListItemText
+                  sx={{ color: theme.palette.primary.main }}
+                  primary="Label: "
+                ></ListItemText>
+                {camelToNaturalString(fitting.labels.join(', '))}
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  sx={{ color: theme.palette.primary.main }}
+                  primary="Epochs: "
+                ></ListItemText>
+                {fitting.epochs}
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  sx={{ color: theme.palette.primary.main }}
+                  primary="Batch Size: "
+                ></ListItemText>
+                {fitting.batchSize}
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  sx={{ color: theme.palette.primary.main }}
+                  primary="Accuracy (R²):"
+                ></ListItemText>
+                {fitting.accuracy}%
+              </ListItem>
+            </List>
+          </Collapse>
+        </Box>
+      </ListItem>
+
+      <Divider />
+    </>
   )
 }
 
@@ -413,4 +445,5 @@ RenderFitting.propTypes = {
   index: PropTypes.number,
   open: PropTypes.array,
   setOpen: PropTypes.func,
+  deleteFitting: PropTypes.func.isRequired,
 }

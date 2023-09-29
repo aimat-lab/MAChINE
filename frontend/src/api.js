@@ -181,7 +181,7 @@ export default {
 
   /**
    * Requests the model list for the current user
-   * @returns {Promise<AxiosResponse<*[]> | *[]>} Promise that returns the model list, or an empty array on exception
+   * @returns {Promise<AxiosResponse<ModelConfig[]> | []>} Promise that returns the model list, or an empty array on exception
    */
   async getModelList() {
     return api
@@ -196,7 +196,7 @@ export default {
 
   /**
    * Requests the molecule list for the current user
-   * @returns {Promise<AxiosResponse<*[]> | *[]>} Promise that returns the molecule list or an empty array on exception
+   * @returns {Promise<AxiosResponse<Molecule[]> | []>} Promise that returns the molecule list or an empty array on exception
    */
   async getMoleculeList() {
     return api
@@ -210,8 +210,20 @@ export default {
   },
 
   /**
+   * Requests to delete a fitting for a user
+   * @param fittingID {string} ID of the fitting to be deleted
+   * @returns {Promise<axios.AxiosResponse<any>>}
+   */
+  async deleteFitting(fittingID) {
+    return api
+      .delete(`/users/${userID}/fittings/${fittingID}`)
+      .then(() => {})
+      .catch(() => {})
+  },
+
+  /**
    * Requests the fitting list for the current user
-   * @returns {Promise<AxiosResponse<*[]> | []>} Promise that returns the fitting list or an empty array on exception
+   * @returns {Promise<AxiosResponse<Fitting[]> | []>} Promise that returns the fitting list or an empty array on exception
    */
   async getFittings() {
     return api
@@ -226,7 +238,7 @@ export default {
 
   /**
    * Requests the dataset summary list
-   * @returns {Promise<AxiosResponse<*[]> | []>} Promise that returns the dataset summary list or an empty array on exception
+   * @returns {Promise<AxiosResponse<Dataset[]> | []>} Promise that returns the dataset summary list or an empty array on exception
    */
   async getDatasets() {
     return api
@@ -258,7 +270,7 @@ export default {
 
   /**
    * Requests list of base models from server
-   * @returns {Promise<AxiosResponse<*[]> | []>} Promise that returns the base model list or an empty array on exception
+   * @returns {Promise<AxiosResponse<BaseModel[]> | []>} Promise that returns the base model list or an empty array on exception
    */
   async getBaseModels() {
     return api
@@ -285,6 +297,17 @@ export default {
       .catch(() => {
         return null
       })
+  },
+
+  /**
+   * Requests to delete a model for the current user
+   * @param modelID {string} ID of the model to be deleted
+   */
+  async deleteModelConfig(modelID) {
+    return api
+      .delete(`/users/${userID}/models/${modelID}`)
+      .then(() => {})
+      .catch(() => {})
   },
 
   /**
@@ -324,6 +347,16 @@ export default {
       .catch(() => {
         throw Error("Couldn't add molecule")
       })
+  },
+
+  /**
+   * Requests to delete a molecule for the current user
+   */
+  async deleteMolecule(smiles) {
+    return api
+      .delete(`/users/${userID}/molecules/${encodeURIComponent(btoa(smiles))}`)
+      .then(() => {})
+      .catch(() => {})
   },
 
   /**
@@ -400,16 +433,25 @@ export default {
    * @param modelID {string} ID of model to train
    * @param labels {array} List of labels to train on
    * @param epochs {number} Number of epochs to train for
+   * @param learningRate {number} Learning rate to train with
    * @param batchSize {number} Batch size to train with
    * @returns {Promise<AxiosResponse<boolean> | boolean>} Promise of a boolean indicating whether starting the training was successful
    */
-  async trainModel(datasetID, modelID, labels, epochs, batchSize) {
+  async trainModel(
+    datasetID,
+    modelID,
+    labels,
+    epochs,
+    learningRate,
+    batchSize
+  ) {
     return api
       .post(`/users/${userID}/train`, {
         datasetID,
         modelID,
         labels: JSON.stringify(labels),
         epochs,
+        learningRate,
         batchSize,
       })
       .then((response) => {
