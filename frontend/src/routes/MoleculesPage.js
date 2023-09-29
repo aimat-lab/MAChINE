@@ -124,7 +124,9 @@ export default function MoleculesPage() {
   function deleteFunc(index) {
     if (index === selectedIndex) {
       setSelectedIndex(-1)
-      setSelectedMolecule(null)
+      // Tricks Analyze button into disabled state while not triggering the backdrop
+      const copy = new Molecule(null, null, selectedMolecule.cml, null)
+      setSelectedMolecule(copy)
     }
     const molecule = molecules[index]
     api
