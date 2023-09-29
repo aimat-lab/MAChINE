@@ -3,15 +3,15 @@
   "moleculesBoard": "Beste Moleküle",
   "common": {
     "userName": "Nutzername",
-    "label": "$t(common:dataset.label)"
+    "label": "$t(common:dataset.label_one)"
   },
   "molecules": {
-    "molecule": "$t(common:molecules.molecule)",
+    "molecule": "$t(common:molecules.molecule_one)",
     "name": "Molekülname",
     "usedModel": "Genutztes Modell"
   },
   "models": {
-    "dataset": "$t(common:dataset.dataset)",
+    "dataset": "$t(common:dataset.dataset_one)",
     "modelName": "Modellname",
     "modelId": "Modell-ID",
     "epochs": "$t(common:models.epochs)",

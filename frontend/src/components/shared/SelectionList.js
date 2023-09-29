@@ -25,7 +25,7 @@ import { useTranslation } from 'react-i18next'
  * List of given elements with corresponding avatars and description text
  * @param updateFunc state function used to inform parent components of current selection
  * @param elements array of elements to be displayed
- * @param elementType string describing element type
+ * @param elementTranslationString translation string for the elment type
  * @param usePopper boolean whether a descriptive popper should appear
  * @param addFunc function to be called when using add button
  * @param height string setting height of the list (ex: 88vh)
@@ -37,7 +37,7 @@ import { useTranslation } from 'react-i18next'
 export default function SelectionList({
   updateFunc,
   elements,
-  elementType,
+  elementTranslationString,
   usePopper,
   addFunc,
   height,
@@ -110,7 +110,7 @@ export default function SelectionList({
             }}
           >
             <AddIcon sx={{ mr: 1 }} />
-            {t('selectionList.addButton', { object: elementType })}
+            {t('selectionList.addButton', { object: elementTranslationString })}
           </Button>
         </CardActions>
         {elements.length === 0 ? (
@@ -126,7 +126,9 @@ export default function SelectionList({
                 textAlign: 'center',
               }}
             >
-              {`You have created no ${elementType}s yet.\nClick on the button above to configure one!`}
+              {t('selectionList.noElements', {
+                object: elementTranslationString,
+              })}
             </Typography>
           </Zoom>
         ) : (
@@ -176,7 +178,7 @@ export default function SelectionList({
 SelectionList.propTypes = {
   elements: PropTypes.array.isRequired,
   usePopper: PropTypes.bool.isRequired,
-  elementType: PropTypes.string.isRequired,
+  elementTranslationString: PropTypes.string.isRequired,
   updateFunc: PropTypes.func.isRequired,
   addFunc: PropTypes.func.isRequired,
   height: PropTypes.any,

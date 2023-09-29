@@ -8,10 +8,12 @@
     "start": "Start"
   },
   "molecules": {
-    "molecule": "Molecule",
-    "molecule_plural": "Molecules"
+    "molecule_one": "Molecule",
+    "molecule_many": "Molecules"
   },
   "models": {
+    "model_one": "Model",
+    "model_many": "Models",
     "modelName": "Model Name",
     "modelId": "Model ID",
     "epochs": "Epochs",
@@ -23,10 +25,11 @@
   },
   "dataset": {
     "dataset": "Dataset",
-    "label": "Label",
-    "label_plural": "Labels"
+    "label_one": "Label",
+    "label_many": "Labels"
   },
   "selectionList": {
-    "addButton": "Add a {{object}}"
+    "addButton": "Add a $t({{object}}_one)",
+    "noElements": "You have created no $t({{object}}_many) yet.\nClick on the button above to configure one!"
   }
 }

@@ -8,10 +8,12 @@
     "start": "Start"
     },
   "molecules": {
-    "molecule": "Molekül",
-    "molecule_plural": "Moleküle"
+    "molecule_one": "Molekül",
+    "molecule_many": "Moleküle"
   },
   "models": {
+    "model_one": "Modell",
+    "model_many": "Modelle",
     "modelName": "Modellname",
     "modelId": "Modell-ID",
     "epochs": "Epochen",
@@ -22,9 +24,9 @@
     "trainedModelId": "Trainiertes Modell-ID"
   },
   "dataset": {
-    "dataset": "Datensatz",
-    "dataset_plural": "Datensätze",
-    "label": "Eigenschaft",
-    "label_plural": "Eigenschaften"
+    "dataset_one": "Datensatz",
+    "dataset_many": "Datensätze",
+    "label_one": "Eigenschaft",
+    "label_many": "Eigenschaften"
   }
 }

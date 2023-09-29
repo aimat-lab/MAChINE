@@ -114,7 +114,7 @@ export default function ModelsPage({
           <SelectionList
             updateFunc={updateSelection}
             elements={modelList}
-            elementType="model"
+            elementTranslationString="common:models.model"
             usePopper={false}
             addFunc={initiateCreation}
             height={gridHeight}

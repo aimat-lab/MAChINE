@@ -1,0 +1,17 @@
+{
+  "moleculeInfo": {
+    "heading": "Analyzed Properties",
+    "noAnalyses": "No analyses available"
+  },
+  "analysisInfo": {
+    "trainedModelId": "$t(common:models.trainedModelId): {{fittingID}}"
+  },
+  "moleculesPage": {
+    "molecule": "t(common:molecules.molecule)",
+    "errors": {
+      "moleculesAlreadySaved":
+        "Molecule already saved as {{duplicate}}. Save again to overwrite any duplicates.",
+      "saveFail": "Can't save molecule."
+    }
+  }
+}

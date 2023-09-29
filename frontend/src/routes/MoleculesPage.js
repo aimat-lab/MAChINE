@@ -162,7 +162,7 @@ export default function MoleculesPage() {
         >
           <SelectionList
             elements={molecules}
-            elementType="molecule"
+            elementTranslationString="common:molecules.molecule"
             usePopper={true}
             addFunc={() => onMoleculeSelect(-1)}
             updateFunc={(index) => onMoleculeSelect(index)}
