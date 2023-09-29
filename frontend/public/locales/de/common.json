@@ -28,5 +28,8 @@
     "dataset_many": "Datensätze",
     "label_one": "Eigenschaft",
     "label_many": "Eigenschaften"
+  },
+  "selectionList": {
+    "addButton": "Neues {{object}}"
   }
 }
