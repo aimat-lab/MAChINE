@@ -88,6 +88,8 @@ export default function MLPModelVisual({
   const [visualizedLayers, setVisualizedLayers] = React.useState(
     [{ type: 'Dense', units: 3 }].concat(modelLayers)
   )
+
+  // the physics options are not optimal, but sufficient. Change them according to https://visjs.github.io/vis-network/docs/network/physics.html as required.
   const [options] = React.useState({
     nodes: {
       borderWidth: 2,
@@ -107,6 +109,11 @@ export default function MLPModelVisual({
         nodeSpacing: 70,
         levelSeparation: 200,
         sortMethod: 'directed',
+      },
+    },
+    physics: {
+      hierarchicalRepulsion: {
+        nodeDistance: 140,
       },
     },
   })
@@ -233,17 +240,43 @@ export default function MLPModelVisual({
    * @param network drawn network
    */
   function afterDraw(ctx, network) {
+    const baseY = network.getPosition('0.2').y
+    // move middle nodes/layer centers to same y position
+    for (let i = 1; i < visualizedLayers.length - 1; i++) {
+      const layerLength = visualizedLayers[i].units
+      if (layerLength >= 7) {
+        network.moveNode(`${i}.2`, network.getPosition(`${i}.2`).x, baseY)
+      } else if (layerLength % 2 === 0) {
+        network.moveNode(
+          `${i}.${Math.floor(layerLength / 2)}`,
+          network.getPosition(`${i}.2`).x,
+          baseY - 110
+        )
+        network.moveNode(
+          `${i}.${Math.floor(layerLength / 2 + 1)}`,
+          network.getPosition(`${i}.2`).x,
+          baseY + 110
+        )
+      } else {
+        network.moveNode(
+          `${i}.${Math.floor((layerLength + 1) / 2)}`,
+          network.getPosition(`${i}.1`).x,
+          baseY
+        )
+      }
+    }
+    network.stopSimulation()
+    // draw plus-signs
     for (let i = 0; i < visualizedLayers.length - 1; i++) {
       ctx.strokeStyle = theme.modelVisual.borderColor
       ctx.fillStyle = theme.modelVisual.backgroundColor
       const x = network.getPosition(`${i}.1`).x + 100
-      const y = network.getPosition('0.2').y
-      roundRect(ctx, x - 20, y - 20, 40, 40, 7, true, true)
+      roundRect(ctx, x - 20, baseY - 20, 40, 40, 7, true, true)
       ctx.font = '30px Poppins'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillStyle = theme.modelVisual.fontColor
-      ctx.fillText('+', x, y + 4)
+      ctx.fillText('+', x, baseY + 4)
     }
   }
 

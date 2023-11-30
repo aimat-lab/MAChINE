@@ -41,6 +41,12 @@ export default function LayerConfigPopup({
     setActivation(event.target.value)
   }
 
+  function handleUnitsKeyDown(event) {
+    if (event.key === 'Enter' && !error) {
+      handleSubmit()
+    }
+  }
+
   return (
     <Card
       sx={{
@@ -49,6 +55,20 @@ export default function LayerConfigPopup({
       }}
     >
       <CardContent>
+        <FormControl fullWidth>
+          <TextField
+            autoFocus
+            type="number"
+            label="Units"
+            error={error}
+            helperText={error ? 'This needs to be a number > 0.' : ''}
+            defaultValue={1}
+            onChange={(e) => handleUnitInput(e)}
+            onKeyDown={handleUnitsKeyDown}
+            sx={{ m: 1 }}
+            required
+          />
+        </FormControl>
         <FormControl fullWidth>
           <InputLabel sx={{ m: 1 }}>Activation Function</InputLabel>
           <Select
@@ -66,18 +86,6 @@ export default function LayerConfigPopup({
               )
             })}
           </Select>
-        </FormControl>
-        <FormControl fullWidth>
-          <TextField
-            type="number"
-            label="Units"
-            error={error}
-            helperText={error ? 'This needs to be a number > 0.' : ''}
-            defaultValue={1}
-            onChange={(e) => handleUnitInput(e)}
-            sx={{ m: 1 }}
-            required
-          />
         </FormControl>
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           <Button sx={{ m: 1 }} onClick={handleCancel}>
